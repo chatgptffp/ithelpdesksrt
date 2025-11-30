@@ -4,9 +4,51 @@ import { createTicketSchema } from "@/lib/validations/ticket";
 import { hashEmployeeCode, maskEmployeeCode, encryptEmployeeCode } from "@/lib/employee-code";
 import { generateTicketCode } from "@/lib/ticket-code";
 import { findResponsibleTeam } from "@/lib/assignment";
+import crypto from "crypto";
+
+// Rate limiting: เก็บ IP และเวลาที่ส่งล่าสุด
+const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 นาที
+const MAX_REQUESTS_PER_WINDOW = 3; // สูงสุด 3 requests ต่อนาที
+
+// Duplicate detection: เก็บ hash ของ request ล่าสุด
+const recentSubmissions = new Map<string, number>();
+const DUPLICATE_WINDOW = 5 * 60 * 1000; // 5 นาที
+
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+  return ip;
+}
+
+function generateRequestHash(data: { employeeCode: string; subject: string; description: string }): string {
+  const content = `${data.employeeCode}|${data.subject}|${data.description}`;
+  return crypto.createHash("md5").update(content).digest("hex");
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIP = getClientIP(request);
+    const now = Date.now();
+
+    // Rate Limiting Check
+    const rateLimit = rateLimitMap.get(clientIP);
+    if (rateLimit) {
+      if (now - rateLimit.lastReset > RATE_LIMIT_WINDOW) {
+        // Reset window
+        rateLimitMap.set(clientIP, { count: 1, lastReset: now });
+      } else if (rateLimit.count >= MAX_REQUESTS_PER_WINDOW) {
+        return NextResponse.json(
+          { error: "คุณส่งคำร้องบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" },
+          { status: 429 }
+        );
+      } else {
+        rateLimit.count++;
+      }
+    } else {
+      rateLimitMap.set(clientIP, { count: 1, lastReset: now });
+    }
+
     const body = await request.json();
     
     // Validate input
@@ -19,6 +61,31 @@ export async function POST(request: NextRequest) {
     }
 
     const data = validationResult.data;
+
+    // Duplicate Detection Check
+    const requestHash = generateRequestHash({
+      employeeCode: data.employeeCode,
+      subject: data.subject,
+      description: data.description,
+    });
+
+    const lastSubmission = recentSubmissions.get(requestHash);
+    if (lastSubmission && now - lastSubmission < DUPLICATE_WINDOW) {
+      return NextResponse.json(
+        { error: "คำร้องนี้ถูกส่งไปแล้ว กรุณารอสักครู่หรือตรวจสอบสถานะคำร้องเดิม" },
+        { status: 409 }
+      );
+    }
+    recentSubmissions.set(requestHash, now);
+
+    // Cleanup old entries (ทุก 100 requests)
+    if (recentSubmissions.size > 100) {
+      for (const [hash, time] of recentSubmissions.entries()) {
+        if (now - time > DUPLICATE_WINDOW) {
+          recentSubmissions.delete(hash);
+        }
+      }
+    }
 
     // Generate unique ticket code
     let ticketCode: string;

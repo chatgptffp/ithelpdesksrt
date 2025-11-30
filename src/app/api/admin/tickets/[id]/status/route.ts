@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { del } from "@vercel/blob";
 
 export async function PUT(
   request: NextRequest,
@@ -23,10 +24,15 @@ export async function PUT(
       return NextResponse.json({ error: "สถานะไม่ถูกต้อง" }, { status: 400 });
     }
 
-    // Get current ticket
+    // Get current ticket with attachments
     const ticket = await prisma.ticket.findUnique({
       where: { id },
-      select: { status: true },
+      select: { 
+        status: true,
+        attachments: {
+          select: { id: true, fileUrl: true }
+        }
+      },
     });
 
     if (!ticket) {
@@ -62,6 +68,28 @@ export async function PUT(
         },
       }),
     ]);
+
+    // ลบไฟล์แนบเมื่อ Ticket ถูกปิดหรือแก้ไขแล้ว
+    if ((status === "RESOLVED" || status === "CLOSED") && ticket.attachments.length > 0) {
+      try {
+        // ลบไฟล์จาก Vercel Blob
+        const deletePromises = ticket.attachments
+          .filter((att: { id: string; fileUrl: string }) => att.fileUrl.includes("blob.vercel-storage.com"))
+          .map((att: { id: string; fileUrl: string }) => del(att.fileUrl));
+        
+        await Promise.allSettled(deletePromises);
+
+        // ลบ record จาก database
+        await prisma.attachment.deleteMany({
+          where: { ticketId: id }
+        });
+
+        console.log(`Deleted ${ticket.attachments.length} attachments for ticket ${id}`);
+      } catch (deleteError) {
+        console.error("Error deleting attachments:", deleteError);
+        // ไม่ throw error เพราะการเปลี่ยนสถานะสำเร็จแล้ว
+      }
+    }
 
     return NextResponse.json({
       success: true,
