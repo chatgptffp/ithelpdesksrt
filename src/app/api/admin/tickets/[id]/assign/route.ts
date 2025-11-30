@@ -59,7 +59,7 @@ export async function PUT(
     }
 
     // Update ticket
-    const updateData: { assigneeId?: string | null; teamId?: string | null; status?: string } = {};
+    const updateData: any = {};
     
     if (assigneeId !== undefined) {
       updateData.assigneeId = assigneeId || null;
