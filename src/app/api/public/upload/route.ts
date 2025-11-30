@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
-import path from "path";
+import { put } from "@vercel/blob";
 import { v4 as uuidv4 } from "uuid";
 
-// Max file size: 10MB
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+// Max file size: 4MB (Vercel limit)
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
 
 // Allowed file types
 const ALLOWED_TYPES = [
@@ -65,29 +63,22 @@ export async function POST(request: NextRequest) {
       // Validate file size
       if (file.size > MAX_FILE_SIZE) {
         return NextResponse.json(
-          { error: `ไฟล์ ${file.name} มีขนาดใหญ่เกินไป (สูงสุด 10MB)` },
+          { error: `ไฟล์ ${file.name} มีขนาดใหญ่เกินไป (สูงสุด 4MB)` },
           { status: 400 }
         );
       }
 
       // Generate unique filename
-      const filename = `${uuidv4()}.${ext}`;
+      const filename = `attachments/${uuidv4()}.${ext}`;
 
-      // Create upload directory if not exists
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "attachments");
-      if (!existsSync(uploadDir)) {
-        await mkdir(uploadDir, { recursive: true });
-      }
-
-      // Write file to disk
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const filePath = path.join(uploadDir, filename);
-      await writeFile(filePath, buffer);
+      // Upload to Vercel Blob
+      const blob = await put(filename, file, {
+        access: "public",
+      });
 
       uploadedFiles.push({
         fileName: file.name,
-        fileUrl: `/uploads/attachments/${filename}`,
+        fileUrl: blob.url,
         mimeType: file.type,
         sizeBytes: file.size,
       });
