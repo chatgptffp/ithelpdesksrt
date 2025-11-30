@@ -1,0 +1,504 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ===========================================
+// Enums
+// ===========================================
+
+enum TicketStatus {
+  NEW
+  IN_PROGRESS
+  WAITING_USER
+  RESOLVED
+  CLOSED
+  REJECTED
+}
+
+enum AuthorType {
+  USER
+  STAFF
+}
+
+enum Visibility {
+  PUBLIC
+  INTERNAL
+}
+
+enum UploaderType {
+  USER
+  STAFF
+}
+
+enum StaffStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum OrgUnitType {
+  BUREAU     // สำนัก/ฝ่าย
+  DIVISION   // กอง
+  DEPARTMENT // แผนก/งาน
+}
+
+enum NotificationChannel {
+  EMAIL
+  LINE
+  DISCORD
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+// ===========================================
+// Master Data Tables
+// ===========================================
+
+model OrgUnit {
+  id        String      @id @default(cuid())
+  code      String?
+  name      String
+  type      OrgUnitType
+  parentId  String?     @map("parent_id")
+  isActive  Boolean     @default(true) @map("is_active")
+  sortOrder Int         @default(0) @map("sort_order")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  parent   OrgUnit?  @relation("OrgUnitTree", fields: [parentId], references: [id])
+  children OrgUnit[] @relation("OrgUnitTree")
+
+  tickets    Ticket[]
+  staffUsers StaffUser[]
+
+  @@unique([type, code])
+  @@map("org_units")
+}
+
+model MdCategory {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tickets         Ticket[]
+  cannedResponses MdCannedResponse[]
+  assignmentRules AssignmentRule[]
+  templates       TicketTemplate[]
+
+  @@map("md_categories")
+}
+
+model MdPriority {
+  id                    String   @id @default(cuid())
+  code                  String   @unique
+  name                  String
+  severity              Int      @default(3)
+  slaFirstResponseMins  Int?     @map("sla_first_response_mins")
+  slaResolveMins        Int?     @map("sla_resolve_mins")
+  isActive              Boolean  @default(true) @map("is_active")
+  sortOrder             Int      @default(0) @map("sort_order")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  tickets   Ticket[]
+  templates TicketTemplate[]
+
+  @@map("md_priorities")
+}
+
+model MdSystem {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  ownerTeam   String?  @map("owner_team")
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tickets         Ticket[]
+  assignmentRules AssignmentRule[]
+  templates       TicketTemplate[]
+
+  @@map("md_systems")
+}
+
+model MdCannedResponse {
+  id         String   @id @default(cuid())
+  title      String
+  body       String
+  categoryId String?  @map("category_id")
+  isActive   Boolean  @default(true) @map("is_active")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category MdCategory? @relation(fields: [categoryId], references: [id])
+  comments Comment[]
+
+  @@map("md_canned_responses")
+}
+
+// ===========================================
+// Staff & Authentication
+// ===========================================
+
+model Role {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  staffRoles StaffRoleMap[]
+
+  @@map("roles")
+}
+
+model StaffUser {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  passwordHash  String?     @map("password_hash")
+  displayName   String      @map("display_name")
+  status        StaffStatus @default(ACTIVE)
+  orgUnitId     String?     @map("org_unit_id")
+  lastLoginAt   DateTime?   @map("last_login_at")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  orgUnit OrgUnit? @relation(fields: [orgUnitId], references: [id])
+
+  staffRoles        StaffRoleMap[]
+  staffTeams        StaffTeamMap[]
+  assignedTickets   Ticket[]           @relation("AssignedTickets")
+  comments          Comment[]
+  statusLogs        TicketStatusLog[]
+  auditLogs         AuditLog[]
+  notificationLogs  NotificationLog[]
+  kbArticles        KbArticle[]
+
+  @@map("staff_users")
+}
+
+model StaffRoleMap {
+  id          String   @id @default(cuid())
+  staffUserId String   @map("staff_user_id")
+  roleId      String   @map("role_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  staffUser StaffUser @relation(fields: [staffUserId], references: [id], onDelete: Cascade)
+  role      Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([staffUserId, roleId])
+  @@map("staff_role_map")
+}
+
+// ===========================================
+// Support Teams & Assignment Rules
+// ===========================================
+
+model SupportTeam {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  members         StaffTeamMap[]
+  assignmentRules AssignmentRule[]
+  tickets         Ticket[]
+
+  @@map("support_teams")
+}
+
+model StaffTeamMap {
+  id        String   @id @default(cuid())
+  staffId   String   @map("staff_id")
+  teamId    String   @map("team_id")
+  isLeader  Boolean  @default(false) @map("is_leader")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  staff StaffUser   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  team  SupportTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, teamId])
+  @@map("staff_team_map")
+}
+
+model AssignmentRule {
+  id         String  @id @default(cuid())
+  teamId     String  @map("team_id")
+  systemId   String? @map("system_id")   // ถ้าระบุ = match กับ system
+  categoryId String? @map("category_id") // ถ้าระบุ = match กับ category
+  priority   Int     @default(0)         // ลำดับความสำคัญ (0=ต่ำสุด)
+  isActive   Boolean @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  team     SupportTeam  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  system   MdSystem?    @relation(fields: [systemId], references: [id])
+  category MdCategory?  @relation(fields: [categoryId], references: [id])
+
+  @@map("assignment_rules")
+}
+
+// ===========================================
+// Ticket System
+// ===========================================
+
+model Ticket {
+  id                  String       @id @default(cuid())
+  ticketCode          String       @unique @map("ticket_code")
+  employeeCodeHash    String       @map("employee_code_hash")
+  employeeCodeMasked  String       @map("employee_code_masked")
+  employeeCodePlain   String?      @map("employee_code_plain")
+  employeeCodeEnc     String?      @map("employee_code_enc")
+  fullName            String       @map("full_name")
+  department          String       // แผนก/งาน (snapshot)
+  division            String       // กอง (snapshot)
+  bureau              String       // สำนัก/ฝ่าย (snapshot)
+  orgUnitId           String?      @map("org_unit_id")
+  categoryId          String?      @map("category_id")
+  priorityId          String?      @map("priority_id")
+  systemId            String?      @map("system_id")
+  teamId              String?      @map("team_id")
+  subject             String
+  description         String
+  status              TicketStatus @default(NEW)
+  assigneeId          String?      @map("assignee_id")
+  resolvedAt          DateTime?    @map("resolved_at")
+  closedAt            DateTime?    @map("closed_at")
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+
+  orgUnit    OrgUnit?     @relation(fields: [orgUnitId], references: [id])
+  category   MdCategory?  @relation(fields: [categoryId], references: [id])
+  priority   MdPriority?  @relation(fields: [priorityId], references: [id])
+  system     MdSystem?    @relation(fields: [systemId], references: [id])
+  team       SupportTeam? @relation(fields: [teamId], references: [id])
+  assignee   StaffUser?   @relation("AssignedTickets", fields: [assigneeId], references: [id])
+
+  attachments         Attachment[]
+  comments            Comment[]
+  statusLogs          TicketStatusLog[]
+  satisfactionSurvey  SatisfactionSurvey?
+  notificationLogs    NotificationLog[]
+
+  @@index([status, createdAt])
+  @@index([employeeCodeHash])
+  @@index([categoryId])
+  @@index([priorityId])
+  @@index([assigneeId])
+  @@index([teamId])
+  @@map("tickets")
+}
+
+model Attachment {
+  id           String       @id @default(cuid())
+  ticketId     String       @map("ticket_id")
+  uploaderType UploaderType @map("uploader_type")
+  fileUrl      String       @map("file_url")
+  fileName     String       @map("file_name")
+  mimeType     String       @map("mime_type")
+  sizeBytes    Int          @map("size_bytes")
+  checksum     String?
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+model Comment {
+  id               String     @id @default(cuid())
+  ticketId         String     @map("ticket_id")
+  authorType       AuthorType @map("author_type")
+  visibility       Visibility @default(PUBLIC)
+  message          String
+  staffUserId      String?    @map("staff_user_id")
+  cannedResponseId String?    @map("canned_response_id")
+  createdAt        DateTime   @default(now()) @map("created_at")
+
+  ticket         Ticket            @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  staffUser      StaffUser?        @relation(fields: [staffUserId], references: [id])
+  cannedResponse MdCannedResponse? @relation(fields: [cannedResponseId], references: [id])
+
+  @@map("comments")
+}
+
+model TicketStatusLog {
+  id                 String       @id @default(cuid())
+  ticketId           String       @map("ticket_id")
+  fromStatus         TicketStatus? @map("from_status")
+  toStatus           TicketStatus @map("to_status")
+  note               String?
+  changedByStaffId   String?      @map("changed_by_staff_id")
+  createdAt          DateTime     @default(now()) @map("created_at")
+
+  ticket      Ticket     @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  changedBy   StaffUser? @relation(fields: [changedByStaffId], references: [id])
+
+  @@map("ticket_status_logs")
+}
+
+model SatisfactionSurvey {
+  id        String   @id @default(cuid())
+  ticketId  String   @unique @map("ticket_id")
+  rating    Int      // 1-5
+  feedback  String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("satisfaction_surveys")
+}
+
+// ===========================================
+// Logs
+// ===========================================
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  actorStaffId  String?  @map("actor_staff_id")
+  action        String
+  entityType    String   @map("entity_type")
+  entityId      String?  @map("entity_id")
+  before        Json?
+  after         Json?
+  ip            String?
+  userAgent     String?  @map("user_agent")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  actorStaff StaffUser? @relation(fields: [actorStaffId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model NotificationLog {
+  id        String              @id @default(cuid())
+  ticketId  String?             @map("ticket_id")
+  channel   NotificationChannel
+  target    String
+  status    NotificationStatus  @default(PENDING)
+  error     String?
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  ticket    Ticket?    @relation(fields: [ticketId], references: [id])
+  staffUser StaffUser? @relation(fields: [staffUserId], references: [id])
+  staffUserId String?  @map("staff_user_id")
+
+  @@map("notification_logs")
+}
+
+// ===========================================
+// Knowledge Base
+// ===========================================
+
+model KbCategory {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  name        String
+  description String?
+  icon        String?   // Icon name from lucide-react
+  color       String?   // Color for the category
+  isActive    Boolean   @default(true) @map("is_active")
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  articles KbArticle[]
+
+  @@map("kb_categories")
+}
+
+model KbArticle {
+  id          String    @id @default(cuid())
+  categoryId  String    @map("category_id")
+  title       String
+  slug        String    @unique
+  excerpt     String?   // Short description
+  content     String    // HTML or Markdown content
+  coverImage  String?   @map("cover_image") // Cover image URL
+  viewCount   Int       @default(0) @map("view_count")
+  isPublished Boolean   @default(false) @map("is_published")
+  isFeatured  Boolean   @default(false) @map("is_featured")
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  authorId    String    @map("author_id")
+
+  category KbCategory @relation(fields: [categoryId], references: [id])
+  author   StaffUser  @relation(fields: [authorId], references: [id])
+  tags     KbArticleTag[]
+
+  @@index([categoryId])
+  @@index([slug])
+  @@index([isPublished])
+  @@map("kb_articles")
+}
+
+model KbTag {
+  id       String @id @default(cuid())
+  name     String @unique
+  slug     String @unique
+  
+  articles KbArticleTag[]
+
+  @@map("kb_tags")
+}
+
+model KbArticleTag {
+  articleId String @map("article_id")
+  tagId     String @map("tag_id")
+
+  article KbArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag     KbTag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@map("kb_article_tags")
+}
+
+// ===========================================
+// Ticket Templates
+// ===========================================
+
+model TicketTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  subject     String
+  body        String
+  categoryId  String?  @map("category_id")
+  priorityId  String?  @map("priority_id")
+  systemId    String?  @map("system_id")
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  category MdCategory? @relation(fields: [categoryId], references: [id])
+  priority MdPriority? @relation(fields: [priorityId], references: [id])
+  system   MdSystem?   @relation(fields: [systemId], references: [id])
+
+  @@map("ticket_templates")
+}
