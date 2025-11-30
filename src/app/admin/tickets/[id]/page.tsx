@@ -229,7 +229,10 @@ export default function AdminTicketDetailPage({
   };
 
   const handleAssign = async () => {
-    if (!selectedAssignee && !selectedTeam) return;
+    const assignee = selectedAssignee === "none" ? null : selectedAssignee;
+    const team = selectedTeam === "none" ? null : selectedTeam;
+    
+    if (!assignee && !team) return;
 
     setIsAssigning(true);
     try {
@@ -237,8 +240,8 @@ export default function AdminTicketDetailPage({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          assigneeId: selectedAssignee || undefined,
-          teamId: selectedTeam || undefined,
+          assigneeId: assignee || undefined,
+          teamId: team || undefined,
         }),
       });
 
@@ -398,7 +401,7 @@ export default function AdminTicketDetailPage({
                       <SelectValue placeholder="เลือกทีม" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">ไม่ระบุ</SelectItem>
+                      <SelectItem value="none">ไม่ระบุ</SelectItem>
                       {teamList.map((team: Team) => (
                         <SelectItem key={team.id} value={team.id}>
                           {team.name}
@@ -414,7 +417,7 @@ export default function AdminTicketDetailPage({
                       <SelectValue placeholder="เลือกเจ้าหน้าที่" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">ไม่ระบุ</SelectItem>
+                      <SelectItem value="none">ไม่ระบุ</SelectItem>
                       {staffList.map((staff) => (
                         <SelectItem key={staff.id} value={staff.id}>
                           {staff.displayName}
@@ -428,7 +431,7 @@ export default function AdminTicketDetailPage({
                 <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>
                   ยกเลิก
                 </Button>
-                <Button onClick={handleAssign} disabled={isAssigning || (!selectedAssignee && !selectedTeam)}>
+                <Button onClick={handleAssign} disabled={isAssigning || ((selectedAssignee === "none" || !selectedAssignee) && (selectedTeam === "none" || !selectedTeam))}>
                   {isAssigning && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   มอบหมาย
                 </Button>
