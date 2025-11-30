@@ -34,11 +34,7 @@ export async function PUT(
     }
 
     // Prepare update data
-    const updateData: {
-      status: string;
-      resolvedAt?: Date | null;
-      closedAt?: Date | null;
-    } = { status };
+    const updateData: any = { status };
 
     // Set resolved/closed timestamps
     if (status === "RESOLVED" && ticket.status !== "RESOLVED") {
@@ -58,11 +54,11 @@ export async function PUT(
       }),
       prisma.ticketStatusLog.create({
         data: {
-          ticketId: id,
+          ticket: { connect: { id } },
           fromStatus: ticket.status,
           toStatus: status,
           note: note || null,
-          changedByStaffId: session.user.id,
+          changedBy: { connect: { id: session.user.id } },
         },
       }),
     ]);
