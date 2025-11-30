@@ -22,6 +22,8 @@ import {
   BarChart3,
   FileText,
   MessageSquareText,
+  Settings,
+  Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -94,6 +96,10 @@ export default function AdminSidebar({ user }: { user: User }) {
 
   const adminNavigation = [
     { name: t.sidebar.users, href: "/admin/users", icon: Users },
+  ];
+
+  const settingsNavigation = [
+    { name: "ตั้งค่า Branding", href: "/admin/settings/branding", icon: Palette },
   ];
 
   const isActive = (href: string) => {
@@ -175,6 +181,24 @@ export default function AdminSidebar({ user }: { user: User }) {
           </p>
           <div className="space-y-1">
             {adminNavigation.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  )}
+                >
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  <span className="truncate">{item.name}</span>
+                </Link>
+              );
+            })}
+            {settingsNavigation.map((item) => {
               const active = isActive(item.href);
               return (
                 <Link

@@ -61,81 +61,135 @@ enum NotificationStatus {
 }
 
 // ===========================================
+// Organization (Multi-tenant)
+// ===========================================
+
+model Organization {
+  id          String   @id @default(cuid())
+  code        String   @unique // subdomain หรือ code สำหรับระบุองค์กร
+  name        String
+  description String?
+  
+  // Branding
+  logoUrl       String?  @map("logo_url")
+  faviconUrl    String?  @map("favicon_url")
+  primaryColor  String   @default("#3b82f6") @map("primary_color")   // สีหลัก
+  secondaryColor String  @default("#64748b") @map("secondary_color") // สีรอง
+  accentColor   String   @default("#f59e0b") @map("accent_color")    // สีเน้น
+  
+  // Contact Info
+  email       String?
+  phone       String?
+  address     String?
+  website     String?
+  
+  // Settings
+  timezone    String   @default("Asia/Bangkok")
+  language    String   @default("th")
+  isActive    Boolean  @default(true) @map("is_active")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  orgUnits    OrgUnit[]
+  staffUsers  StaffUser[]
+  tickets     Ticket[]
+  supportTeams SupportTeam[]
+  categories  MdCategory[]
+  priorities  MdPriority[]
+  systems     MdSystem[]
+  
+  @@map("organizations")
+}
+
+// ===========================================
 // Master Data Tables
 // ===========================================
 
 model OrgUnit {
-  id        String      @id @default(cuid())
-  code      String?
-  name      String
-  type      OrgUnitType
-  parentId  String?     @map("parent_id")
-  isActive  Boolean     @default(true) @map("is_active")
-  sortOrder Int         @default(0) @map("sort_order")
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @updatedAt @map("updated_at")
+  id             String       @id @default(cuid())
+  organizationId String?      @map("organization_id")
+  code           String?
+  name           String
+  type           OrgUnitType
+  parentId       String?      @map("parent_id")
+  isActive       Boolean      @default(true) @map("is_active")
+  sortOrder      Int          @default(0) @map("sort_order")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
 
-  parent   OrgUnit?  @relation("OrgUnitTree", fields: [parentId], references: [id])
-  children OrgUnit[] @relation("OrgUnitTree")
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  parent       OrgUnit?      @relation("OrgUnitTree", fields: [parentId], references: [id])
+  children     OrgUnit[]     @relation("OrgUnitTree")
 
   tickets    Ticket[]
   staffUsers StaffUser[]
 
-  @@unique([type, code])
+  @@unique([organizationId, type, code])
   @@map("org_units")
 }
 
 model MdCategory {
-  id          String   @id @default(cuid())
-  code        String   @unique
-  name        String
-  description String?
-  isActive    Boolean  @default(true) @map("is_active")
-  sortOrder   Int      @default(0) @map("sort_order")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id             String        @id @default(cuid())
+  organizationId String?       @map("organization_id")
+  code           String
+  name           String
+  description    String?
+  isActive       Boolean       @default(true) @map("is_active")
+  sortOrder      Int           @default(0) @map("sort_order")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
 
+  organization    Organization?      @relation(fields: [organizationId], references: [id])
   tickets         Ticket[]
   cannedResponses MdCannedResponse[]
   assignmentRules AssignmentRule[]
   templates       TicketTemplate[]
 
+  @@unique([organizationId, code])
   @@map("md_categories")
 }
 
 model MdPriority {
-  id                    String   @id @default(cuid())
-  code                  String   @unique
+  id                    String        @id @default(cuid())
+  organizationId        String?       @map("organization_id")
+  code                  String
   name                  String
-  severity              Int      @default(3)
-  slaFirstResponseMins  Int?     @map("sla_first_response_mins")
-  slaResolveMins        Int?     @map("sla_resolve_mins")
-  isActive              Boolean  @default(true) @map("is_active")
-  sortOrder             Int      @default(0) @map("sort_order")
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  severity              Int           @default(3)
+  slaFirstResponseMins  Int?          @map("sla_first_response_mins")
+  slaResolveMins        Int?          @map("sla_resolve_mins")
+  isActive              Boolean       @default(true) @map("is_active")
+  sortOrder             Int           @default(0) @map("sort_order")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
 
-  tickets   Ticket[]
-  templates TicketTemplate[]
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  tickets      Ticket[]
+  templates    TicketTemplate[]
 
+  @@unique([organizationId, code])
   @@map("md_priorities")
 }
 
 model MdSystem {
-  id          String   @id @default(cuid())
-  code        String   @unique
-  name        String
-  ownerTeam   String?  @map("owner_team")
-  description String?
-  isActive    Boolean  @default(true) @map("is_active")
-  sortOrder   Int      @default(0) @map("sort_order")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id             String        @id @default(cuid())
+  organizationId String?       @map("organization_id")
+  code           String
+  name           String
+  ownerTeam      String?       @map("owner_team")
+  description    String?
+  isActive       Boolean       @default(true) @map("is_active")
+  sortOrder      Int           @default(0) @map("sort_order")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
 
+  organization    Organization?    @relation(fields: [organizationId], references: [id])
   tickets         Ticket[]
   assignmentRules AssignmentRule[]
   templates       TicketTemplate[]
 
+  @@unique([organizationId, code])
   @@map("md_systems")
 }
 
@@ -173,17 +227,19 @@ model Role {
 }
 
 model StaffUser {
-  id            String      @id @default(cuid())
-  email         String      @unique
-  passwordHash  String?     @map("password_hash")
-  displayName   String      @map("display_name")
-  status        StaffStatus @default(ACTIVE)
-  orgUnitId     String?     @map("org_unit_id")
-  lastLoginAt   DateTime?   @map("last_login_at")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  id             String        @id @default(cuid())
+  organizationId String?       @map("organization_id")
+  email          String        @unique
+  passwordHash   String?       @map("password_hash")
+  displayName    String        @map("display_name")
+  status         StaffStatus   @default(ACTIVE)
+  orgUnitId      String?       @map("org_unit_id")
+  lastLoginAt    DateTime?     @map("last_login_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
 
-  orgUnit OrgUnit? @relation(fields: [orgUnitId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  orgUnit      OrgUnit?      @relation(fields: [orgUnitId], references: [id])
 
   staffRoles        StaffRoleMap[]
   staffTeams        StaffTeamMap[]
@@ -215,19 +271,22 @@ model StaffRoleMap {
 // ===========================================
 
 model SupportTeam {
-  id          String   @id @default(cuid())
-  code        String   @unique
-  name        String
-  description String?
-  isActive    Boolean  @default(true) @map("is_active")
-  sortOrder   Int      @default(0) @map("sort_order")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id             String        @id @default(cuid())
+  organizationId String?       @map("organization_id")
+  code           String
+  name           String
+  description    String?
+  isActive       Boolean       @default(true) @map("is_active")
+  sortOrder      Int           @default(0) @map("sort_order")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
 
+  organization    Organization?    @relation(fields: [organizationId], references: [id])
   members         StaffTeamMap[]
   assignmentRules AssignmentRule[]
   tickets         Ticket[]
 
+  @@unique([organizationId, code])
   @@map("support_teams")
 }
 
@@ -267,36 +326,38 @@ model AssignmentRule {
 // ===========================================
 
 model Ticket {
-  id                  String       @id @default(cuid())
-  ticketCode          String       @unique @map("ticket_code")
-  employeeCodeHash    String       @map("employee_code_hash")
-  employeeCodeMasked  String       @map("employee_code_masked")
-  employeeCodePlain   String?      @map("employee_code_plain")
-  employeeCodeEnc     String?      @map("employee_code_enc")
-  fullName            String       @map("full_name")
-  department          String       // แผนก/งาน (snapshot)
-  division            String       // กอง (snapshot)
-  bureau              String       // สำนัก/ฝ่าย (snapshot)
-  orgUnitId           String?      @map("org_unit_id")
-  categoryId          String?      @map("category_id")
-  priorityId          String?      @map("priority_id")
-  systemId            String?      @map("system_id")
-  teamId              String?      @map("team_id")
+  id                  String        @id @default(cuid())
+  organizationId      String?       @map("organization_id")
+  ticketCode          String        @unique @map("ticket_code")
+  employeeCodeHash    String        @map("employee_code_hash")
+  employeeCodeMasked  String        @map("employee_code_masked")
+  employeeCodePlain   String?       @map("employee_code_plain")
+  employeeCodeEnc     String?       @map("employee_code_enc")
+  fullName            String        @map("full_name")
+  department          String        // แผนก/งาน (snapshot)
+  division            String        // กอง (snapshot)
+  bureau              String        // สำนัก/ฝ่าย (snapshot)
+  orgUnitId           String?       @map("org_unit_id")
+  categoryId          String?       @map("category_id")
+  priorityId          String?       @map("priority_id")
+  systemId            String?       @map("system_id")
+  teamId              String?       @map("team_id")
   subject             String
   description         String
-  status              TicketStatus @default(NEW)
-  assigneeId          String?      @map("assignee_id")
-  resolvedAt          DateTime?    @map("resolved_at")
-  closedAt            DateTime?    @map("closed_at")
-  createdAt           DateTime     @default(now()) @map("created_at")
-  updatedAt           DateTime     @updatedAt @map("updated_at")
+  status              TicketStatus  @default(NEW)
+  assigneeId          String?       @map("assignee_id")
+  resolvedAt          DateTime?     @map("resolved_at")
+  closedAt            DateTime?     @map("closed_at")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
 
-  orgUnit    OrgUnit?     @relation(fields: [orgUnitId], references: [id])
-  category   MdCategory?  @relation(fields: [categoryId], references: [id])
-  priority   MdPriority?  @relation(fields: [priorityId], references: [id])
-  system     MdSystem?    @relation(fields: [systemId], references: [id])
-  team       SupportTeam? @relation(fields: [teamId], references: [id])
-  assignee   StaffUser?   @relation("AssignedTickets", fields: [assigneeId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  orgUnit      OrgUnit?      @relation(fields: [orgUnitId], references: [id])
+  category     MdCategory?   @relation(fields: [categoryId], references: [id])
+  priority     MdPriority?   @relation(fields: [priorityId], references: [id])
+  system       MdSystem?     @relation(fields: [systemId], references: [id])
+  team         SupportTeam?  @relation(fields: [teamId], references: [id])
+  assignee     StaffUser?    @relation("AssignedTickets", fields: [assigneeId], references: [id])
 
   attachments         Attachment[]
   comments            Comment[]
@@ -304,7 +365,7 @@ model Ticket {
   satisfactionSurvey  SatisfactionSurvey?
   notificationLogs    NotificationLog[]
 
-  @@index([status, createdAt])
+  @@index([organizationId, status, createdAt])
   @@index([employeeCodeHash])
   @@index([categoryId])
   @@index([priorityId])

@@ -3,6 +3,7 @@ import { Chakra_Petch } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LanguageProvider } from "@/lib/i18n";
+import { BrandingProvider } from "@/contexts/branding-context";
 import "./globals.css";
 
 const chakraPetch = Chakra_Petch({
@@ -34,8 +35,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
-            {children}
-            <Toaster position="top-center" richColors />
+            <BrandingProvider>
+              {children}
+              <Toaster position="top-center" richColors />
+            </BrandingProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>
