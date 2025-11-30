@@ -474,14 +474,14 @@ export default function ReportPage() {
                       control={form.control}
                       name="systemId"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="min-w-0">
                           <FormLabel>ระบบที่มีปัญหา</FormLabel>
                           <Select
                             value={field.value || ""}
                             onValueChange={field.onChange}
                           >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="w-full">
                                 <SelectValue placeholder="เลือกระบบ" />
                               </SelectTrigger>
                             </FormControl>
