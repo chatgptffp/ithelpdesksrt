@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
-
-const prisma = new PrismaClient();
+import { prisma } from "../src/lib/db";
 
 async function main() {
   console.log("Starting seed...");
@@ -30,86 +28,105 @@ async function main() {
   console.log("Created roles:", { adminRole, agentRole });
 
   // Create Org Units (Bureau -> Division -> Department)
-  const itBureau = await prisma.orgUnit.upsert({
-    where: { type_code: { type: "BUREAU", code: "B-IT" } },
-    update: {},
-    create: {
-      code: "B-IT",
-      name: "สำนักเทคโนโลยีสารสนเทศ",
-      type: "BUREAU",
-      isActive: true,
-      sortOrder: 1,
-    },
+  // ใช้ findFirst + create แทน upsert เพราะ unique constraint มี organizationId
+  let itBureau = await prisma.orgUnit.findFirst({
+    where: { type: "BUREAU", code: "B-IT" },
   });
+  if (!itBureau) {
+    itBureau = await prisma.orgUnit.create({
+      data: {
+        code: "B-IT",
+        name: "สำนักเทคโนโลยีสารสนเทศ",
+        type: "BUREAU",
+        isActive: true,
+        sortOrder: 1,
+      },
+    });
+  }
 
-  const devDivision = await prisma.orgUnit.upsert({
-    where: { type_code: { type: "DIVISION", code: "D-DEV" } },
-    update: {},
-    create: {
-      code: "D-DEV",
-      name: "กองพัฒนาระบบ",
-      type: "DIVISION",
-      parentId: itBureau.id,
-      isActive: true,
-      sortOrder: 1,
-    },
+  let devDivision = await prisma.orgUnit.findFirst({
+    where: { type: "DIVISION", code: "D-DEV" },
   });
+  if (!devDivision) {
+    devDivision = await prisma.orgUnit.create({
+      data: {
+        code: "D-DEV",
+        name: "กองพัฒนาระบบ",
+        type: "DIVISION",
+        parentId: itBureau.id,
+        isActive: true,
+        sortOrder: 1,
+      },
+    });
+  }
 
-  const infraDivision = await prisma.orgUnit.upsert({
-    where: { type_code: { type: "DIVISION", code: "D-INFRA" } },
-    update: {},
-    create: {
-      code: "D-INFRA",
-      name: "กองโครงสร้างพื้นฐาน",
-      type: "DIVISION",
-      parentId: itBureau.id,
-      isActive: true,
-      sortOrder: 2,
-    },
+  let infraDivision = await prisma.orgUnit.findFirst({
+    where: { type: "DIVISION", code: "D-INFRA" },
   });
+  if (!infraDivision) {
+    infraDivision = await prisma.orgUnit.create({
+      data: {
+        code: "D-INFRA",
+        name: "กองโครงสร้างพื้นฐาน",
+        type: "DIVISION",
+        parentId: itBureau.id,
+        isActive: true,
+        sortOrder: 2,
+      },
+    });
+  }
 
-  const webDept = await prisma.orgUnit.upsert({
-    where: { type_code: { type: "DEPARTMENT", code: "DP-WEB" } },
-    update: {},
-    create: {
-      code: "DP-WEB",
-      name: "งานพัฒนาเว็บ",
-      type: "DEPARTMENT",
-      parentId: devDivision.id,
-      isActive: true,
-      sortOrder: 1,
-    },
+  let webDept = await prisma.orgUnit.findFirst({
+    where: { type: "DEPARTMENT", code: "DP-WEB" },
   });
+  if (!webDept) {
+    webDept = await prisma.orgUnit.create({
+      data: {
+        code: "DP-WEB",
+        name: "งานพัฒนาเว็บ",
+        type: "DEPARTMENT",
+        parentId: devDivision.id,
+        isActive: true,
+        sortOrder: 1,
+      },
+    });
+  }
 
-  const appDept = await prisma.orgUnit.upsert({
-    where: { type_code: { type: "DEPARTMENT", code: "DP-APP" } },
-    update: {},
-    create: {
-      code: "DP-APP",
-      name: "งานพัฒนาแอปพลิเคชัน",
-      type: "DEPARTMENT",
-      parentId: devDivision.id,
-      isActive: true,
-      sortOrder: 2,
-    },
+  let appDept = await prisma.orgUnit.findFirst({
+    where: { type: "DEPARTMENT", code: "DP-APP" },
   });
+  if (!appDept) {
+    appDept = await prisma.orgUnit.create({
+      data: {
+        code: "DP-APP",
+        name: "งานพัฒนาแอปพลิเคชัน",
+        type: "DEPARTMENT",
+        parentId: devDivision.id,
+        isActive: true,
+        sortOrder: 2,
+      },
+    });
+  }
 
-  const netDept = await prisma.orgUnit.upsert({
-    where: { type_code: { type: "DEPARTMENT", code: "DP-NET" } },
-    update: {},
-    create: {
-      code: "DP-NET",
-      name: "งานเครือข่าย",
-      type: "DEPARTMENT",
-      parentId: infraDivision.id,
-      isActive: true,
-      sortOrder: 1,
-    },
+  let netDept = await prisma.orgUnit.findFirst({
+    where: { type: "DEPARTMENT", code: "DP-NET" },
   });
+  if (!netDept) {
+    netDept = await prisma.orgUnit.create({
+      data: {
+        code: "DP-NET",
+        name: "งานเครือข่าย",
+        type: "DEPARTMENT",
+        parentId: infraDivision.id,
+        isActive: true,
+        sortOrder: 1,
+      },
+    });
+  }
 
   console.log("Created org units");
 
-  // Create Categories
+  // Create Categories (ใช้ findFirst + create เพราะ unique constraint มี organizationId)
   const categories = [
     { code: "CAT-ACC", name: "บัญชีผู้ใช้/สิทธิ์เข้าใช้งาน", sortOrder: 1 },
     { code: "CAT-EMAIL", name: "อีเมล/ปฏิทิน", sortOrder: 2 },
@@ -121,11 +138,10 @@ async function main() {
   ];
 
   for (const cat of categories) {
-    await prisma.mdCategory.upsert({
-      where: { code: cat.code },
-      update: {},
-      create: cat,
-    });
+    const existing = await prisma.mdCategory.findFirst({ where: { code: cat.code } });
+    if (!existing) {
+      await prisma.mdCategory.create({ data: cat });
+    }
   }
   console.log("Created categories");
 
@@ -138,11 +154,10 @@ async function main() {
   ];
 
   for (const priority of priorities) {
-    await prisma.mdPriority.upsert({
-      where: { code: priority.code },
-      update: {},
-      create: priority,
-    });
+    const existing = await prisma.mdPriority.findFirst({ where: { code: priority.code } });
+    if (!existing) {
+      await prisma.mdPriority.create({ data: priority });
+    }
   }
   console.log("Created priorities");
 
@@ -158,11 +173,10 @@ async function main() {
   ];
 
   for (const system of systems) {
-    await prisma.mdSystem.upsert({
-      where: { code: system.code },
-      update: {},
-      create: system,
-    });
+    const existing = await prisma.mdSystem.findFirst({ where: { code: system.code } });
+    if (!existing) {
+      await prisma.mdSystem.create({ data: system });
+    }
   }
   console.log("Created systems");
 
@@ -205,6 +219,6 @@ main()
     console.error(e);
     process.exit(1);
   })
-  .finally(async () => {
-    await prisma.$disconnect();
+  .finally(() => {
+    process.exit(0);
   });
