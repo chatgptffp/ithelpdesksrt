@@ -469,20 +469,22 @@ export default function ReportPage() {
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">รายละเอียดปัญหา</h3>
                   </div>
 
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
                       name="systemId"
                       render={({ field }) => (
-                        <FormItem className="min-w-0">
+                        <FormItem className="min-w-0 overflow-hidden">
                           <FormLabel>ระบบที่มีปัญหา</FormLabel>
                           <Select
                             value={field.value || ""}
                             onValueChange={field.onChange}
                           >
                             <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="เลือกระบบ" />
+                              <SelectTrigger className="w-full overflow-hidden">
+                                <span className="truncate block">
+                                  <SelectValue placeholder="เลือกระบบ" />
+                                </span>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -502,15 +504,17 @@ export default function ReportPage() {
                       control={form.control}
                       name="categoryId"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="min-w-0 overflow-hidden">
                           <FormLabel>หมวดหมู่ปัญหา</FormLabel>
                           <Select
                             value={field.value || ""}
                             onValueChange={field.onChange}
                           >
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="เลือกหมวดหมู่" />
+                              <SelectTrigger className="w-full overflow-hidden">
+                                <span className="truncate block">
+                                  <SelectValue placeholder="เลือกหมวดหมู่" />
+                                </span>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -530,15 +534,17 @@ export default function ReportPage() {
                       control={form.control}
                       name="priorityId"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="min-w-0 overflow-hidden">
                           <FormLabel>ความเร่งด่วน</FormLabel>
                           <Select
                             value={field.value || ""}
                             onValueChange={field.onChange}
                           >
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="เลือกความเร่งด่วน" />
+                              <SelectTrigger className="w-full overflow-hidden">
+                                <span className="truncate block">
+                                  <SelectValue placeholder="เลือกความเร่งด่วน" />
+                                </span>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
