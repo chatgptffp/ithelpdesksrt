@@ -89,11 +89,11 @@ export async function PUT(
         ? [
             prisma.ticketStatusLog.create({
               data: {
-                ticketId: id,
+                ticket: { connect: { id } },
                 fromStatus: ticket.status,
                 toStatus: updateData.status || ticket.status,
                 note: note || null,
-                changedById: session.user.id,
+                changedBy: { connect: { id: session.user.id } },
               },
             }),
           ]
