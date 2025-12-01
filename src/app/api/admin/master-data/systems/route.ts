@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "กรุณากรอกข้อมูลให้ครบ" }, { status: 400 });
     }
 
-    const existing = await prisma.mdSystem.findUnique({ where: { code } });
+    const existing = await prisma.mdSystem.findFirst({ where: { code } });
     if (existing) {
       return NextResponse.json({ error: "รหัสนี้มีอยู่แล้ว" }, { status: 400 });
     }

@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check duplicate code
-    const existing = await prisma.mdCategory.findUnique({ where: { code } });
+    const existing = await prisma.mdCategory.findFirst({ where: { code } });
     if (existing) {
       return NextResponse.json({ error: "รหัสนี้มีอยู่แล้ว" }, { status: 400 });
     }
