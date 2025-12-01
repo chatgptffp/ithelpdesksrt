@@ -159,6 +159,53 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Send notification for new ticket
+    try {
+      const { NotificationManager } = await import('@/lib/notification/manager');
+      const notificationManager = new NotificationManager();
+      await notificationManager.initialize();
+
+      // Get ticket details for notification
+      const ticketWithDetails = await prisma.ticket.findUnique({
+        where: { id: ticket.id },
+        include: {
+          category: { select: { name: true } },
+          priority: { select: { name: true } },
+          system: { select: { name: true } },
+          team: { select: { name: true } },
+        }
+      });
+
+      if (ticketWithDetails) {
+        const notificationData = {
+          ticketId: ticket.id,
+          ticketCode: ticket.ticketCode,
+          subject: ticket.subject,
+          description: ticket.description,
+          status: 'ใหม่',
+          priority: ticketWithDetails.priority?.name || 'ไม่ระบุ',
+          category: ticketWithDetails.category?.name || 'ไม่ระบุ',
+          requesterName: ticket.fullName,
+          url: `${process.env.NEXTAUTH_URL}/admin/tickets/${ticket.id}`,
+        };
+
+        // Get team members to notify
+        const teamMembers = await prisma.staffUser.findMany({
+          where: { teamId: teamId },
+          select: { email: true }
+        });
+
+        const recipients = teamMembers.map((member: { email: string | null }) => member.email).filter(Boolean) as string[];
+        
+        if (recipients.length > 0) {
+          await notificationManager.notifyTicketCreated(notificationData, recipients);
+        }
+      }
+    } catch (notificationError) {
+      console.error('Error sending notification:', notificationError);
+      // Don't fail the ticket creation if notification fails
+    }
+
     return NextResponse.json({
       success: true,
       ticketCode: ticket.ticketCode,

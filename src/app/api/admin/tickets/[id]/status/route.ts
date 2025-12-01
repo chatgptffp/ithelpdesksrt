@@ -91,6 +91,69 @@ export async function PUT(
       }
     }
 
+    // Send notification for status change
+    try {
+      const { NotificationManager } = await import('@/lib/notification/manager');
+      const notificationManager = new NotificationManager();
+      await notificationManager.initialize();
+
+      // Get ticket details for notification
+      const ticketWithDetails = await prisma.ticket.findUnique({
+        where: { id },
+        include: {
+          category: { select: { name: true } },
+          priority: { select: { name: true } },
+          assignee: { select: { displayName: true, email: true } },
+          team: { 
+            select: { 
+              name: true,
+              members: { select: { email: true } }
+            } 
+          },
+        }
+      });
+
+      if (ticketWithDetails) {
+        const statusLabels: Record<string, string> = {
+          NEW: "ใหม่",
+          IN_PROGRESS: "กำลังดำเนินการ", 
+          WAITING_USER: "รอข้อมูล",
+          RESOLVED: "แก้ไขแล้ว",
+          CLOSED: "ปิดงาน",
+          REJECTED: "ปฏิเสธ",
+        };
+
+        const notificationData = {
+          ticketId: id,
+          ticketCode: ticketWithDetails.ticketCode,
+          subject: ticketWithDetails.subject,
+          status: statusLabels[status] || status,
+          assigneeName: ticketWithDetails.assignee?.displayName || 'ไม่ระบุ',
+          url: `${process.env.NEXTAUTH_URL}/admin/tickets/${id}`,
+        };
+
+        // Get recipients (assignee + team members)
+        const recipients: string[] = [];
+        if (ticketWithDetails.assignee?.email) {
+          recipients.push(ticketWithDetails.assignee.email);
+        }
+        if (ticketWithDetails.team?.members) {
+          ticketWithDetails.team.members.forEach((member: { email: string | null }) => {
+            if (member.email && !recipients.includes(member.email)) {
+              recipients.push(member.email);
+            }
+          });
+        }
+        
+        if (recipients.length > 0) {
+          await notificationManager.notifyStatusChanged(notificationData, recipients);
+        }
+      }
+    } catch (notificationError) {
+      console.error('Error sending notification:', notificationError);
+      // Don't fail the status update if notification fails
+    }
+
     return NextResponse.json({
       success: true,
       ticket: updatedTicket,

@@ -48,6 +48,58 @@ export async function POST(
       data: { updatedAt: new Date() },
     });
 
+    // Send notification for new comment (only for public comments)
+    if (!isInternal) {
+      try {
+        const { NotificationManager } = await import('@/lib/notification/manager');
+        const notificationManager = new NotificationManager();
+        await notificationManager.initialize();
+
+        // Get ticket details for notification
+        const ticketWithDetails = await prisma.ticket.findUnique({
+          where: { id },
+          include: {
+            assignee: { select: { email: true } },
+            team: { 
+              select: { 
+                members: { select: { email: true } }
+              } 
+            },
+          }
+        });
+
+        if (ticketWithDetails) {
+          const notificationData = {
+            ticketId: id,
+            ticketCode: ticketWithDetails.ticketCode,
+            subject: ticketWithDetails.subject,
+            comment: message.trim(),
+            url: `${process.env.NEXTAUTH_URL}/admin/tickets/${id}`,
+          };
+
+          // Get recipients (assignee + team members)
+          const recipients: string[] = [];
+          if (ticketWithDetails.assignee?.email) {
+            recipients.push(ticketWithDetails.assignee.email);
+          }
+          if (ticketWithDetails.team?.members) {
+            ticketWithDetails.team.members.forEach((member: { email: string | null }) => {
+              if (member.email && !recipients.includes(member.email)) {
+                recipients.push(member.email);
+              }
+            });
+          }
+          
+          if (recipients.length > 0) {
+            await notificationManager.notifyCommentAdded(notificationData, recipients);
+          }
+        }
+      } catch (notificationError) {
+        console.error('Error sending notification:', notificationError);
+        // Don't fail the comment creation if notification fails
+      }
+    }
+
     return NextResponse.json({
       success: true,
       comment,

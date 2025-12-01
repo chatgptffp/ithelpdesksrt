@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Save, Mail, MessageCircle, Hash, TestTube, Loader2 } from "lucide-react";
+import { Save, Mail, MessageCircle, Hash, TestTube, Loader2, FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,8 @@ export default function NotificationSettingsPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isTesting, setIsTesting] = useState({ email: false, line: false, discord: false });
+  const [isTesting, setIsTesting] = useState<{ [key: string]: boolean }>({});
+  const [isCreatingTemplates, setIsCreatingTemplates] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -113,6 +114,25 @@ export default function NotificationSettingsPage() {
     }
   };
 
+  const createDefaultTemplates = async () => {
+    setIsCreatingTemplates(true);
+    try {
+      const response = await fetch("/api/admin/notifications/templates/default", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        toast.success("สร้าง Template เริ่มต้นเรียบร้อยแล้ว");
+      } else {
+        toast.error("เกิดข้อผิดพลาดในการสร้าง Template");
+      }
+    } catch (error) {
+      toast.error("เกิดข้อผิดพลาดในการสร้าง Template");
+    } finally {
+      setIsCreatingTemplates(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -129,14 +149,29 @@ export default function NotificationSettingsPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ตั้งค่าการแจ้งเตือน</h1>
           <p className="text-gray-600 dark:text-gray-400">จัดการการแจ้งเตือนผ่านอีเมล, LINE และ Discord</p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
-          {isSaving ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          บันทึก
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            onClick={createDefaultTemplates} 
+            disabled={isCreatingTemplates}
+            className="border-blue-600 text-blue-600 hover:bg-blue-50"
+          >
+            {isCreatingTemplates ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <FileText className="h-4 w-4 mr-2" />
+            )}
+            สร้าง Template เริ่มต้น
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            บันทึก
+          </Button>
+        </div>
       </div>
 
       <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
