@@ -24,6 +24,7 @@ import {
   MessageSquareText,
   Settings,
   Palette,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -100,6 +101,7 @@ export default function AdminSidebar({ user }: { user: User }) {
 
   const settingsNavigation = [
     { name: "ตั้งค่า Branding", href: "/admin/settings/branding", icon: Palette },
+    { name: "การแจ้งเตือน", href: "/admin/settings/notifications", icon: Bell },
   ];
 
   const isActive = (href: string) => {

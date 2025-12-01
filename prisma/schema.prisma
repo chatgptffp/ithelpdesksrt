@@ -99,6 +99,8 @@ model Organization {
   categories  MdCategory[]
   priorities  MdPriority[]
   systems     MdSystem[]
+  notificationTemplates NotificationTemplate[]
+  notificationSettings  NotificationSettings?
   
   @@map("organizations")
 }
@@ -249,6 +251,7 @@ model StaffUser {
   auditLogs         AuditLog[]
   notificationLogs  NotificationLog[]
   kbArticles        KbArticle[]
+  notifications     Notification[]
 
   @@map("staff_users")
 }
@@ -364,6 +367,7 @@ model Ticket {
   statusLogs          TicketStatusLog[]
   satisfactionSurvey  SatisfactionSurvey?
   notificationLogs    NotificationLog[]
+  notifications       Notification[]
 
   @@index([organizationId, status, createdAt])
   @@index([employeeCodeHash])
@@ -562,4 +566,99 @@ model TicketTemplate {
   system   MdSystem?   @relation(fields: [systemId], references: [id])
 
   @@map("ticket_templates")
+}
+
+// ===========================================
+// Notification System
+// ===========================================
+
+model NotificationTemplate {
+  id             String   @id @default(cuid())
+  organizationId String?  @map("organization_id")
+  name           String   // "ticket_created", "ticket_status_changed", "comment_added"
+  channel        NotificationChannel
+  subject        String?  // สำหรับ EMAIL
+  body           String   // Template body with variables
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  notifications Notification[]
+  notificationQueue NotificationQueue[]
+
+  @@unique([organizationId, name, channel])
+  @@map("notification_templates")
+}
+
+model NotificationQueue {
+  id         String             @id @default(cuid())
+  templateId String             @map("template_id")
+  channel    NotificationChannel
+  recipient  String             // email, LINE token, Discord webhook URL
+  subject    String?            // สำหรับ EMAIL
+  body       String
+  variables  Json?              // ตัวแปรสำหรับแทนที่ใน template
+  status     NotificationStatus @default(PENDING)
+  error      String?            // error message ถ้าส่งไม่สำเร็จ
+  sentAt     DateTime?          @map("sent_at")
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime           @updatedAt @map("updated_at")
+
+  template NotificationTemplate @relation(fields: [templateId], references: [id])
+
+  @@map("notification_queue")
+}
+
+model Notification {
+  id         String             @id @default(cuid())
+  templateId String             @map("template_id")
+  ticketId   String?            @map("ticket_id")
+  userId     String?            @map("user_id")
+  channel    NotificationChannel
+  recipient  String
+  subject    String?
+  body       String
+  status     NotificationStatus @default(PENDING)
+  error      String?
+  sentAt     DateTime?          @map("sent_at")
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime           @updatedAt @map("updated_at")
+
+  template NotificationTemplate @relation(fields: [templateId], references: [id])
+  ticket   Ticket?             @relation(fields: [ticketId], references: [id])
+  user     StaffUser?          @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model NotificationSettings {
+  id             String   @id @default(cuid())
+  organizationId String?  @map("organization_id")
+  
+  // Email Settings
+  emailEnabled   Boolean  @default(false) @map("email_enabled")
+  smtpHost       String?  @map("smtp_host")
+  smtpPort       Int?     @map("smtp_port")
+  smtpUser       String?  @map("smtp_user")
+  smtpPassword   String?  @map("smtp_password")
+  smtpSecure     Boolean  @default(true) @map("smtp_secure")
+  fromEmail      String?  @map("from_email")
+  fromName       String?  @map("from_name")
+  
+  // LINE Notify Settings
+  lineEnabled    Boolean  @default(false) @map("line_enabled")
+  lineToken      String?  @map("line_token")
+  
+  // Discord Settings
+  discordEnabled Boolean  @default(false) @map("discord_enabled")
+  discordWebhook String?  @map("discord_webhook")
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId])
+  @@map("notification_settings")
 }
