@@ -43,8 +43,8 @@ enum StaffStatus {
 }
 
 enum OrgUnitType {
-  BUREAU     // สำนัก/ฝ่าย
-  DIVISION   // กอง
+  BUREAU // สำนัก/ฝ่าย
+  DIVISION // กอง
   DEPARTMENT // แผนก/งาน
 }
 
@@ -65,43 +65,43 @@ enum NotificationStatus {
 // ===========================================
 
 model Organization {
-  id          String   @id @default(cuid())
-  code        String   @unique // subdomain หรือ code สำหรับระบุองค์กร
+  id          String  @id @default(cuid())
+  code        String  @unique // subdomain หรือ code สำหรับระบุองค์กร
   name        String
   description String?
-  
+
   // Branding
-  logoUrl       String?  @map("logo_url")
-  faviconUrl    String?  @map("favicon_url")
-  primaryColor  String   @default("#3b82f6") @map("primary_color")   // สีหลัก
+  logoUrl        String? @map("logo_url")
+  faviconUrl     String? @map("favicon_url")
+  primaryColor   String  @default("#3b82f6") @map("primary_color") // สีหลัก
   secondaryColor String  @default("#64748b") @map("secondary_color") // สีรอง
-  accentColor   String   @default("#f59e0b") @map("accent_color")    // สีเน้น
-  
+  accentColor    String  @default("#f59e0b") @map("accent_color") // สีเน้น
+
   // Contact Info
-  email       String?
-  phone       String?
-  address     String?
-  website     String?
-  
+  email   String?
+  phone   String?
+  address String?
+  website String?
+
   // Settings
-  timezone    String   @default("Asia/Bangkok")
-  language    String   @default("th")
-  isActive    Boolean  @default(true) @map("is_active")
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
+  timezone String  @default("Asia/Bangkok")
+  language String  @default("th")
+  isActive Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   // Relations
-  orgUnits    OrgUnit[]
-  staffUsers  StaffUser[]
-  tickets     Ticket[]
-  supportTeams SupportTeam[]
-  categories  MdCategory[]
-  priorities  MdPriority[]
-  systems     MdSystem[]
+  orgUnits              OrgUnit[]
+  staffUsers            StaffUser[]
+  tickets               Ticket[]
+  supportTeams          SupportTeam[]
+  categories            MdCategory[]
+  priorities            MdPriority[]
+  systems               MdSystem[]
   notificationTemplates NotificationTemplate[]
   notificationSettings  NotificationSettings?
-  
+
   @@map("organizations")
 }
 
@@ -110,16 +110,16 @@ model Organization {
 // ===========================================
 
 model OrgUnit {
-  id             String       @id @default(cuid())
-  organizationId String?      @map("organization_id")
+  id             String      @id @default(cuid())
+  organizationId String?     @map("organization_id")
   code           String?
   name           String
   type           OrgUnitType
-  parentId       String?      @map("parent_id")
-  isActive       Boolean      @default(true) @map("is_active")
-  sortOrder      Int          @default(0) @map("sort_order")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
+  parentId       String?     @map("parent_id")
+  isActive       Boolean     @default(true) @map("is_active")
+  sortOrder      Int         @default(0) @map("sort_order")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
 
   organization Organization? @relation(fields: [organizationId], references: [id])
   parent       OrgUnit?      @relation("OrgUnitTree", fields: [parentId], references: [id])
@@ -133,15 +133,15 @@ model OrgUnit {
 }
 
 model MdCategory {
-  id             String        @id @default(cuid())
-  organizationId String?       @map("organization_id")
+  id             String   @id @default(cuid())
+  organizationId String?  @map("organization_id")
   code           String
   name           String
   description    String?
-  isActive       Boolean       @default(true) @map("is_active")
-  sortOrder      Int           @default(0) @map("sort_order")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  isActive       Boolean  @default(true) @map("is_active")
+  sortOrder      Int      @default(0) @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   organization    Organization?      @relation(fields: [organizationId], references: [id])
   tickets         Ticket[]
@@ -154,19 +154,19 @@ model MdCategory {
 }
 
 model MdPriority {
-  id                    String        @id @default(cuid())
-  organizationId        String?       @map("organization_id")
-  code                  String
-  name                  String
-  severity              Int           @default(3)
-  slaFirstResponseMins  Int?          @map("sla_first_response_mins")
-  slaResolveMins        Int?          @map("sla_resolve_mins")
-  isActive              Boolean       @default(true) @map("is_active")
-  sortOrder             Int           @default(0) @map("sort_order")
-  createdAt             DateTime      @default(now()) @map("created_at")
-  updatedAt             DateTime      @updatedAt @map("updated_at")
+  id                   String   @id @default(cuid())
+  organizationId       String?  @map("organization_id")
+  code                 String
+  name                 String
+  severity             Int      @default(3)
+  slaFirstResponseMins Int?     @map("sla_first_response_mins")
+  slaResolveMins       Int?     @map("sla_resolve_mins")
+  isActive             Boolean  @default(true) @map("is_active")
+  sortOrder            Int      @default(0) @map("sort_order")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
-  organization Organization? @relation(fields: [organizationId], references: [id])
+  organization Organization?    @relation(fields: [organizationId], references: [id])
   tickets      Ticket[]
   templates    TicketTemplate[]
 
@@ -175,16 +175,16 @@ model MdPriority {
 }
 
 model MdSystem {
-  id             String        @id @default(cuid())
-  organizationId String?       @map("organization_id")
+  id             String   @id @default(cuid())
+  organizationId String?  @map("organization_id")
   code           String
   name           String
-  ownerTeam      String?       @map("owner_team")
+  ownerTeam      String?  @map("owner_team")
   description    String?
-  isActive       Boolean       @default(true) @map("is_active")
-  sortOrder      Int           @default(0) @map("sort_order")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  isActive       Boolean  @default(true) @map("is_active")
+  sortOrder      Int      @default(0) @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   organization    Organization?    @relation(fields: [organizationId], references: [id])
   tickets         Ticket[]
@@ -229,29 +229,29 @@ model Role {
 }
 
 model StaffUser {
-  id             String        @id @default(cuid())
-  organizationId String?       @map("organization_id")
-  email          String        @unique
-  passwordHash   String?       @map("password_hash")
-  displayName    String        @map("display_name")
-  status         StaffStatus   @default(ACTIVE)
-  orgUnitId      String?       @map("org_unit_id")
-  lastLoginAt    DateTime?     @map("last_login_at")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  id             String      @id @default(cuid())
+  organizationId String?     @map("organization_id")
+  email          String      @unique
+  passwordHash   String?     @map("password_hash")
+  displayName    String      @map("display_name")
+  status         StaffStatus @default(ACTIVE)
+  orgUnitId      String?     @map("org_unit_id")
+  lastLoginAt    DateTime?   @map("last_login_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
 
   organization Organization? @relation(fields: [organizationId], references: [id])
   orgUnit      OrgUnit?      @relation(fields: [orgUnitId], references: [id])
 
-  staffRoles        StaffRoleMap[]
-  staffTeams        StaffTeamMap[]
-  assignedTickets   Ticket[]           @relation("AssignedTickets")
-  comments          Comment[]
-  statusLogs        TicketStatusLog[]
-  auditLogs         AuditLog[]
-  notificationLogs  NotificationLog[]
-  kbArticles        KbArticle[]
-  notifications     Notification[]
+  staffRoles       StaffRoleMap[]
+  staffTeams       StaffTeamMap[]
+  assignedTickets  Ticket[]          @relation("AssignedTickets")
+  comments         Comment[]
+  statusLogs       TicketStatusLog[]
+  auditLogs        AuditLog[]
+  notificationLogs NotificationLog[]
+  kbArticles       KbArticle[]
+  notifications    Notification[]
 
   @@map("staff_users")
 }
@@ -274,15 +274,15 @@ model StaffRoleMap {
 // ===========================================
 
 model SupportTeam {
-  id             String        @id @default(cuid())
-  organizationId String?       @map("organization_id")
+  id             String   @id @default(cuid())
+  organizationId String?  @map("organization_id")
   code           String
   name           String
   description    String?
-  isActive       Boolean       @default(true) @map("is_active")
-  sortOrder      Int           @default(0) @map("sort_order")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  isActive       Boolean  @default(true) @map("is_active")
+  sortOrder      Int      @default(0) @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   organization    Organization?    @relation(fields: [organizationId], references: [id])
   members         StaffTeamMap[]
@@ -308,18 +308,18 @@ model StaffTeamMap {
 }
 
 model AssignmentRule {
-  id         String  @id @default(cuid())
-  teamId     String  @map("team_id")
-  systemId   String? @map("system_id")   // ถ้าระบุ = match กับ system
-  categoryId String? @map("category_id") // ถ้าระบุ = match กับ category
-  priority   Int     @default(0)         // ลำดับความสำคัญ (0=ต่ำสุด)
-  isActive   Boolean @default(true) @map("is_active")
+  id         String   @id @default(cuid())
+  teamId     String   @map("team_id")
+  systemId   String?  @map("system_id") // ถ้าระบุ = match กับ system
+  categoryId String?  @map("category_id") // ถ้าระบุ = match กับ category
+  priority   Int      @default(0) // ลำดับความสำคัญ (0=ต่ำสุด)
+  isActive   Boolean  @default(true) @map("is_active")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  team     SupportTeam  @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  system   MdSystem?    @relation(fields: [systemId], references: [id])
-  category MdCategory?  @relation(fields: [categoryId], references: [id])
+  team     SupportTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  system   MdSystem?   @relation(fields: [systemId], references: [id])
+  category MdCategory? @relation(fields: [categoryId], references: [id])
 
   @@map("assignment_rules")
 }
@@ -329,30 +329,30 @@ model AssignmentRule {
 // ===========================================
 
 model Ticket {
-  id                  String        @id @default(cuid())
-  organizationId      String?       @map("organization_id")
-  ticketCode          String        @unique @map("ticket_code")
-  employeeCodeHash    String        @map("employee_code_hash")
-  employeeCodeMasked  String        @map("employee_code_masked")
-  employeeCodePlain   String?       @map("employee_code_plain")
-  employeeCodeEnc     String?       @map("employee_code_enc")
-  fullName            String        @map("full_name")
-  department          String        // แผนก/งาน (snapshot)
-  division            String        // กอง (snapshot)
-  bureau              String        // สำนัก/ฝ่าย (snapshot)
-  orgUnitId           String?       @map("org_unit_id")
-  categoryId          String?       @map("category_id")
-  priorityId          String?       @map("priority_id")
-  systemId            String?       @map("system_id")
-  teamId              String?       @map("team_id")
-  subject             String
-  description         String
-  status              TicketStatus  @default(NEW)
-  assigneeId          String?       @map("assignee_id")
-  resolvedAt          DateTime?     @map("resolved_at")
-  closedAt            DateTime?     @map("closed_at")
-  createdAt           DateTime      @default(now()) @map("created_at")
-  updatedAt           DateTime      @updatedAt @map("updated_at")
+  id                 String       @id @default(cuid())
+  organizationId     String?      @map("organization_id")
+  ticketCode         String       @unique @map("ticket_code")
+  employeeCodeHash   String       @map("employee_code_hash")
+  employeeCodeMasked String       @map("employee_code_masked")
+  employeeCodePlain  String?      @map("employee_code_plain")
+  employeeCodeEnc    String?      @map("employee_code_enc")
+  fullName           String       @map("full_name")
+  department         String // แผนก/งาน (snapshot)
+  division           String // กอง (snapshot)
+  bureau             String // สำนัก/ฝ่าย (snapshot)
+  orgUnitId          String?      @map("org_unit_id")
+  categoryId         String?      @map("category_id")
+  priorityId         String?      @map("priority_id")
+  systemId           String?      @map("system_id")
+  teamId             String?      @map("team_id")
+  subject            String
+  description        String
+  status             TicketStatus @default(NEW)
+  assigneeId         String?      @map("assignee_id")
+  resolvedAt         DateTime?    @map("resolved_at")
+  closedAt           DateTime?    @map("closed_at")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
 
   organization Organization? @relation(fields: [organizationId], references: [id])
   orgUnit      OrgUnit?      @relation(fields: [orgUnitId], references: [id])
@@ -362,12 +362,12 @@ model Ticket {
   team         SupportTeam?  @relation(fields: [teamId], references: [id])
   assignee     StaffUser?    @relation("AssignedTickets", fields: [assigneeId], references: [id])
 
-  attachments         Attachment[]
-  comments            Comment[]
-  statusLogs          TicketStatusLog[]
-  satisfactionSurvey  SatisfactionSurvey?
-  notificationLogs    NotificationLog[]
-  notifications       Notification[]
+  attachments        Attachment[]
+  comments           Comment[]
+  statusLogs         TicketStatusLog[]
+  satisfactionSurvey SatisfactionSurvey?
+  notificationLogs   NotificationLog[]
+  notifications      Notification[]
 
   @@index([organizationId, status, createdAt])
   @@index([employeeCodeHash])
@@ -412,16 +412,16 @@ model Comment {
 }
 
 model TicketStatusLog {
-  id                 String       @id @default(cuid())
-  ticketId           String       @map("ticket_id")
-  fromStatus         TicketStatus? @map("from_status")
-  toStatus           TicketStatus @map("to_status")
-  note               String?
-  changedByStaffId   String?      @map("changed_by_staff_id")
-  createdAt          DateTime     @default(now()) @map("created_at")
+  id               String        @id @default(cuid())
+  ticketId         String        @map("ticket_id")
+  fromStatus       TicketStatus? @map("from_status")
+  toStatus         TicketStatus  @map("to_status")
+  note             String?
+  changedByStaffId String?       @map("changed_by_staff_id")
+  createdAt        DateTime      @default(now()) @map("created_at")
 
-  ticket      Ticket     @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  changedBy   StaffUser? @relation(fields: [changedByStaffId], references: [id])
+  ticket    Ticket     @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  changedBy StaffUser? @relation(fields: [changedByStaffId], references: [id])
 
   @@map("ticket_status_logs")
 }
@@ -429,7 +429,7 @@ model TicketStatusLog {
 model SatisfactionSurvey {
   id        String   @id @default(cuid())
   ticketId  String   @unique @map("ticket_id")
-  rating    Int      // 1-5
+  rating    Int // 1-5
   feedback  String?
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -443,16 +443,16 @@ model SatisfactionSurvey {
 // ===========================================
 
 model AuditLog {
-  id            String   @id @default(cuid())
-  actorStaffId  String?  @map("actor_staff_id")
-  action        String
-  entityType    String   @map("entity_type")
-  entityId      String?  @map("entity_id")
-  before        Json?
-  after         Json?
-  ip            String?
-  userAgent     String?  @map("user_agent")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id           String   @id @default(cuid())
+  actorStaffId String?  @map("actor_staff_id")
+  action       String
+  entityType   String   @map("entity_type")
+  entityId     String?  @map("entity_id")
+  before       Json?
+  after        Json?
+  ip           String?
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   actorStaff StaffUser? @relation(fields: [actorStaffId], references: [id])
 
@@ -468,9 +468,9 @@ model NotificationLog {
   error     String?
   createdAt DateTime            @default(now()) @map("created_at")
 
-  ticket    Ticket?    @relation(fields: [ticketId], references: [id])
-  staffUser StaffUser? @relation(fields: [staffUserId], references: [id])
-  staffUserId String?  @map("staff_user_id")
+  ticket      Ticket?    @relation(fields: [ticketId], references: [id])
+  staffUser   StaffUser? @relation(fields: [staffUserId], references: [id])
+  staffUserId String?    @map("staff_user_id")
 
   @@map("notification_logs")
 }
@@ -480,16 +480,16 @@ model NotificationLog {
 // ===========================================
 
 model KbCategory {
-  id          String    @id @default(cuid())
-  code        String    @unique
+  id          String   @id @default(cuid())
+  code        String   @unique
   name        String
   description String?
-  icon        String?   // Icon name from lucide-react
-  color       String?   // Color for the category
-  isActive    Boolean   @default(true) @map("is_active")
-  sortOrder   Int       @default(0) @map("sort_order")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  icon        String? // Icon name from lucide-react
+  color       String? // Color for the category
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   articles KbArticle[]
 
@@ -501,8 +501,8 @@ model KbArticle {
   categoryId  String    @map("category_id")
   title       String
   slug        String    @unique
-  excerpt     String?   // Short description
-  content     String    // HTML or Markdown content
+  excerpt     String? // Short description
+  content     String // HTML or Markdown content
   coverImage  String?   @map("cover_image") // Cover image URL
   viewCount   Int       @default(0) @map("view_count")
   isPublished Boolean   @default(false) @map("is_published")
@@ -512,8 +512,8 @@ model KbArticle {
   updatedAt   DateTime  @updatedAt @map("updated_at")
   authorId    String    @map("author_id")
 
-  category KbCategory @relation(fields: [categoryId], references: [id])
-  author   StaffUser  @relation(fields: [authorId], references: [id])
+  category KbCategory     @relation(fields: [categoryId], references: [id])
+  author   StaffUser      @relation(fields: [authorId], references: [id])
   tags     KbArticleTag[]
 
   @@index([categoryId])
@@ -523,10 +523,10 @@ model KbArticle {
 }
 
 model KbTag {
-  id       String @id @default(cuid())
-  name     String @unique
-  slug     String @unique
-  
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
   articles KbArticleTag[]
 
   @@map("kb_tags")
@@ -573,36 +573,37 @@ model TicketTemplate {
 // ===========================================
 
 model NotificationTemplate {
-  id             String   @id @default(cuid())
-  organizationId String?  @map("organization_id")
-  name           String   // e.g., "ticket_created", "status_changed"
+  id             String              @id @default(cuid())
+  organizationId String?             @map("organization_id")
+  name           String // e.g., "ticket_created", "status_changed"
   channel        NotificationChannel
-  subject        String?  // For email
-  body           String   @db.Text
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  subject        String? // For email
+  body           String              @db.Text
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
 
   // Relations
-  organization  Organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  notifications Notification[]
+  organization      Organization?       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  notifications     Notification[]
+  notificationQueue NotificationQueue[]
 
   @@map("notification_templates")
 }
 
 model NotificationQueue {
-  id         String             @id @default(cuid())
-  templateId String             @map("template_id")
+  id         String              @id @default(cuid())
+  templateId String              @map("template_id")
   channel    NotificationChannel
-  recipient  String             // email, LINE token, Discord webhook URL
-  subject    String?            // สำหรับ EMAIL
+  recipient  String // email, LINE token, Discord webhook URL
+  subject    String? // สำหรับ EMAIL
   body       String
-  variables  Json?              // ตัวแปรสำหรับแทนที่ใน template
-  status     NotificationStatus @default(PENDING)
-  error      String?            // error message ถ้าส่งไม่สำเร็จ
-  sentAt     DateTime?          @map("sent_at")
-  createdAt  DateTime           @default(now()) @map("created_at")
-  updatedAt  DateTime           @updatedAt @map("updated_at")
+  variables  Json? // ตัวแปรสำหรับแทนที่ใน template
+  status     NotificationStatus  @default(PENDING)
+  error      String? // error message ถ้าส่งไม่สำเร็จ
+  sentAt     DateTime?           @map("sent_at")
+  createdAt  DateTime            @default(now()) @map("created_at")
+  updatedAt  DateTime            @updatedAt @map("updated_at")
 
   template NotificationTemplate @relation(fields: [templateId], references: [id])
 
@@ -610,53 +611,53 @@ model NotificationQueue {
 }
 
 model Notification {
-  id         String             @id @default(cuid())
-  templateId String             @map("template_id")
-  ticketId   String?            @map("ticket_id")
-  userId     String?            @map("user_id")
+  id         String              @id @default(cuid())
+  templateId String              @map("template_id")
+  ticketId   String?             @map("ticket_id")
+  userId     String?             @map("user_id")
   channel    NotificationChannel
   recipient  String
   subject    String?
   body       String
-  status     NotificationStatus @default(PENDING)
+  status     NotificationStatus  @default(PENDING)
   error      String?
-  sentAt     DateTime?          @map("sent_at")
-  createdAt  DateTime           @default(now()) @map("created_at")
-  updatedAt  DateTime           @updatedAt @map("updated_at")
+  sentAt     DateTime?           @map("sent_at")
+  createdAt  DateTime            @default(now()) @map("created_at")
+  updatedAt  DateTime            @updatedAt @map("updated_at")
 
   template NotificationTemplate @relation(fields: [templateId], references: [id])
-  ticket   Ticket?             @relation(fields: [ticketId], references: [id])
-  user     StaffUser?          @relation(fields: [userId], references: [id])
+  ticket   Ticket?              @relation(fields: [ticketId], references: [id])
+  user     StaffUser?           @relation(fields: [userId], references: [id])
 
   @@map("notifications")
 }
 
 model NotificationSettings {
-  id             String   @id @default(cuid())
-  organizationId String?  @map("organization_id")
-  
+  id             String  @id @default(cuid())
+  organizationId String? @map("organization_id")
+
   // Email Settings
-  emailEnabled   Boolean  @default(false) @map("email_enabled")
-  smtpHost       String?  @map("smtp_host")
-  smtpPort       Int?     @map("smtp_port")
-  smtpUser       String?  @map("smtp_user")
-  smtpPassword   String?  @map("smtp_password")
-  smtpSecure     Boolean  @default(true) @map("smtp_secure")
-  fromEmail      String?  @map("from_email")
-  fromName       String?  @map("from_name")
-  
+  emailEnabled Boolean @default(false) @map("email_enabled")
+  smtpHost     String? @map("smtp_host")
+  smtpPort     Int?    @map("smtp_port")
+  smtpUser     String? @map("smtp_user")
+  smtpPassword String? @map("smtp_password")
+  smtpSecure   Boolean @default(true) @map("smtp_secure")
+  fromEmail    String? @map("from_email")
+  fromName     String? @map("from_name")
+
   // LINE Messaging API Settings
-  lineEnabled       Boolean  @default(false) @map("line_enabled")
-  lineChannelSecret String?  @map("line_channel_secret")
-  lineAccessToken   String?  @map("line_access_token")
-  lineUserId        String?  @map("line_user_id") // Target user ID for notifications
-  
+  lineEnabled       Boolean @default(false) @map("line_enabled")
+  lineChannelSecret String? @map("line_channel_secret")
+  lineAccessToken   String? @map("line_access_token")
+  lineUserId        String? @map("line_user_id") // Target user ID for notifications
+
   // Discord Settings
-  discordEnabled Boolean  @default(false) @map("discord_enabled")
-  discordWebhook String?  @map("discord_webhook")
-  
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  discordEnabled Boolean @default(false) @map("discord_enabled")
+  discordWebhook String? @map("discord_webhook")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   organization Organization? @relation(fields: [organizationId], references: [id])
 
