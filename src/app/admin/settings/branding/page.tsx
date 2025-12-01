@@ -126,17 +126,16 @@ export default function BrandingSettingsPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">ตั้งค่า Branding</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ตั้งค่า Branding</h1>
+          <p className="text-gray-600 dark:text-gray-400">
             ปรับแต่งรูปลักษณ์และข้อมูลองค์กร
           </p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto">
+        <Button onClick={handleSave} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
           {isSaving ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
           ) : (
@@ -147,50 +146,48 @@ export default function BrandingSettingsPage() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="w-full flex flex-wrap h-auto gap-1 p-1">
-          <TabsTrigger value="general" className="flex-1 min-w-[100px] gap-1 sm:gap-2 text-xs sm:text-sm">
-            <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden xs:inline">ข้อมูล</span>ทั่วไป
+        <TabsList className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-1">
+          <TabsTrigger value="general" className="gap-2">
+            <Building2 className="h-4 w-4" />
+            ข้อมูลทั่วไป
           </TabsTrigger>
-          <TabsTrigger value="branding" className="flex-1 min-w-[100px] gap-1 sm:gap-2 text-xs sm:text-sm">
-            <Palette className="h-3 w-3 sm:h-4 sm:w-4" />
+          <TabsTrigger value="branding" className="gap-2">
+            <Palette className="h-4 w-4" />
             รูปลักษณ์
           </TabsTrigger>
-          <TabsTrigger value="contact" className="flex-1 min-w-[100px] gap-1 sm:gap-2 text-xs sm:text-sm">
-            <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden xs:inline">ข้อมูล</span>ติดต่อ
+          <TabsTrigger value="contact" className="gap-2">
+            <Globe className="h-4 w-4" />
+            ข้อมูลติดต่อ
           </TabsTrigger>
         </TabsList>
 
         {/* General Tab */}
         <TabsContent value="general">
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base sm:text-lg">ข้อมูลองค์กร</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <CardHeader>
+              <CardTitle>ข้อมูลองค์กร</CardTitle>
+              <CardDescription>
                 ข้อมูลพื้นฐานขององค์กรที่จะแสดงในระบบ
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm">ชื่อองค์กร *</Label>
+                <Label htmlFor="name">ชื่อองค์กร *</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="เช่น IT Helpdesk"
-                  className="text-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-sm">คำอธิบาย</Label>
+                <Label htmlFor="description">คำอธิบาย</Label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="คำอธิบายเกี่ยวกับองค์กร"
                   rows={3}
-                  className="text-sm"
                 />
               </div>
             </CardContent>
@@ -201,34 +198,33 @@ export default function BrandingSettingsPage() {
         <TabsContent value="branding">
           <div className="space-y-6">
             {/* Logo & Favicon */}
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
                   โลโก้และไอคอน
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
+                <CardDescription>
                   อัปโหลด URL ของโลโก้และ Favicon
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="logoUrl" className="text-sm">URL โลโก้</Label>
+                    <Label htmlFor="logoUrl">URL โลโก้</Label>
                     <Input
                       id="logoUrl"
                       value={logoUrl}
                       onChange={(e) => setLogoUrl(e.target.value)}
                       placeholder="https://example.com/logo.png"
-                      className="text-sm"
                     />
                     {logoUrl && (
-                      <div className="mt-2 p-3 border rounded-lg bg-muted/50">
-                        <p className="text-xs text-muted-foreground mb-2">ตัวอย่าง:</p>
+                      <div className="mt-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                        <p className="text-sm text-gray-500 mb-2">ตัวอย่าง:</p>
                         <img
                           src={logoUrl}
                           alt="Logo preview"
-                          className="max-h-12 sm:max-h-16 object-contain"
+                          className="max-h-16 object-contain"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display = "none";
                           }}
@@ -237,13 +233,12 @@ export default function BrandingSettingsPage() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="faviconUrl" className="text-sm">URL Favicon</Label>
+                    <Label htmlFor="faviconUrl">URL Favicon</Label>
                     <Input
                       id="faviconUrl"
                       value={faviconUrl}
                       onChange={(e) => setFaviconUrl(e.target.value)}
                       placeholder="https://example.com/favicon.ico"
-                      className="text-sm"
                     />
                   </div>
                 </div>
@@ -251,109 +246,109 @@ export default function BrandingSettingsPage() {
             </Card>
 
             {/* Colors */}
-            <Card>
-              <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                      <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <CardTitle className="flex items-center gap-2">
+                      <Palette className="h-5 w-5" />
                       สีหลัก
                     </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm">
+                    <CardDescription>
                       ปรับแต่งสีที่ใช้ในระบบ
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" onClick={resetColors} className="w-full sm:w-auto">
-                    <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <Button variant="outline" size="sm" onClick={resetColors}>
+                    <RefreshCw className="h-4 w-4 mr-1" />
                     รีเซ็ต
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-3">
                   {/* Primary Color */}
                   <div className="space-y-2">
-                    <Label htmlFor="primaryColor" className="text-sm">สีหลัก (Primary)</Label>
+                    <Label htmlFor="primaryColor">สีหลัก (Primary)</Label>
                     <div className="flex gap-2">
                       <Input
                         type="color"
                         id="primaryColor"
                         value={primaryColor}
                         onChange={(e) => setPrimaryColor(e.target.value)}
-                        className="w-12 h-9 p-1 cursor-pointer shrink-0"
+                        className="w-12 h-10 p-1 cursor-pointer shrink-0"
                       />
                       <Input
                         value={primaryColor}
                         onChange={(e) => setPrimaryColor(e.target.value)}
                         placeholder="#3b82f6"
-                        className="flex-1 text-sm"
+                        className="flex-1"
                       />
                     </div>
                   </div>
                   {/* Secondary Color */}
                   <div className="space-y-2">
-                    <Label htmlFor="secondaryColor" className="text-sm">สีรอง (Secondary)</Label>
+                    <Label htmlFor="secondaryColor">สีรอง (Secondary)</Label>
                     <div className="flex gap-2">
                       <Input
                         type="color"
                         id="secondaryColor"
                         value={secondaryColor}
                         onChange={(e) => setSecondaryColor(e.target.value)}
-                        className="w-12 h-9 p-1 cursor-pointer shrink-0"
+                        className="w-12 h-10 p-1 cursor-pointer shrink-0"
                       />
                       <Input
                         value={secondaryColor}
                         onChange={(e) => setSecondaryColor(e.target.value)}
                         placeholder="#64748b"
-                        className="flex-1 text-sm"
+                        className="flex-1"
                       />
                     </div>
                   </div>
                   {/* Accent Color */}
                   <div className="space-y-2">
-                    <Label htmlFor="accentColor" className="text-sm">สีเน้น (Accent)</Label>
+                    <Label htmlFor="accentColor">สีเน้น (Accent)</Label>
                     <div className="flex gap-2">
                       <Input
                         type="color"
                         id="accentColor"
                         value={accentColor}
                         onChange={(e) => setAccentColor(e.target.value)}
-                        className="w-12 h-9 p-1 cursor-pointer shrink-0"
+                        className="w-12 h-10 p-1 cursor-pointer shrink-0"
                       />
                       <Input
                         value={accentColor}
                         onChange={(e) => setAccentColor(e.target.value)}
                         placeholder="#f59e0b"
-                        className="flex-1 text-sm"
+                        className="flex-1"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Color Preview */}
-                <div className="p-4 border rounded-lg bg-muted/30">
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-3">ตัวอย่างสี:</p>
-                  <div className="flex flex-wrap gap-3">
+                <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">ตัวอย่างสี:</p>
+                  <div className="flex gap-4">
                     <div className="flex flex-col items-center gap-1">
                       <div
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg shadow-sm border"
+                        className="w-12 h-12 rounded-lg shadow-sm border"
                         style={{ backgroundColor: primaryColor }}
                       />
-                      <span className="text-[10px] sm:text-xs text-muted-foreground">Primary</span>
+                      <span className="text-xs text-gray-500">Primary</span>
                     </div>
                     <div className="flex flex-col items-center gap-1">
                       <div
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg shadow-sm border"
+                        className="w-12 h-12 rounded-lg shadow-sm border"
                         style={{ backgroundColor: secondaryColor }}
                       />
-                      <span className="text-[10px] sm:text-xs text-muted-foreground">Secondary</span>
+                      <span className="text-xs text-gray-500">Secondary</span>
                     </div>
                     <div className="flex flex-col items-center gap-1">
                       <div
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg shadow-sm border"
+                        className="w-12 h-12 rounded-lg shadow-sm border"
                         style={{ backgroundColor: accentColor }}
                       />
-                      <span className="text-[10px] sm:text-xs text-muted-foreground">Accent</span>
+                      <span className="text-xs text-gray-500">Accent</span>
                     </div>
                   </div>
                 </div>
@@ -364,63 +359,58 @@ export default function BrandingSettingsPage() {
 
         {/* Contact Tab */}
         <TabsContent value="contact">
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base sm:text-lg">ข้อมูลติดต่อ</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <CardHeader>
+              <CardTitle>ข้อมูลติดต่อ</CardTitle>
+              <CardDescription>
                 ข้อมูลสำหรับติดต่อองค์กร
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm">อีเมล</Label>
+                  <Label htmlFor="email">อีเมล</Label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="support@example.com"
-                    className="text-sm"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm">เบอร์โทรศัพท์</Label>
+                  <Label htmlFor="phone">เบอร์โทรศัพท์</Label>
                   <Input
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="02-xxx-xxxx"
-                    className="text-sm"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="website" className="text-sm">เว็บไซต์</Label>
+                <Label htmlFor="website">เว็บไซต์</Label>
                 <Input
                   id="website"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://example.com"
-                  className="text-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="address" className="text-sm">ที่อยู่</Label>
+                <Label htmlFor="address">ที่อยู่</Label>
                 <Textarea
                   id="address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="ที่อยู่องค์กร"
                   rows={3}
-                  className="text-sm"
                 />
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-      </div>
     </div>
   );
 }
