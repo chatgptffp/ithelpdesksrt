@@ -575,19 +575,18 @@ model TicketTemplate {
 model NotificationTemplate {
   id             String   @id @default(cuid())
   organizationId String?  @map("organization_id")
-  name           String   // "ticket_created", "ticket_status_changed", "comment_added"
+  name           String   // e.g., "ticket_created", "status_changed"
   channel        NotificationChannel
-  subject        String?  // สำหรับ EMAIL
-  body           String   // Template body with variables
-  isActive       Boolean  @default(true) @map("is_active")
+  subject        String?  // For email
+  body           String   @db.Text
+  isActive       Boolean  @default(true)
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  organization Organization? @relation(fields: [organizationId], references: [id])
+  // Relations
+  organization  Organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   notifications Notification[]
-  notificationQueue NotificationQueue[]
 
-  @@unique([organizationId, name, channel])
   @@map("notification_templates")
 }
 
