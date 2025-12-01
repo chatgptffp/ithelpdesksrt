@@ -190,12 +190,14 @@ export async function POST(request: NextRequest) {
         };
 
         // Get team members to notify
-        const teamMembers = await prisma.staffUser.findMany({
+        const teamMembers = await prisma.staffTeamMap.findMany({
           where: { teamId: teamId },
-          select: { email: true }
+          select: { staff: { select: { email: true } } }
         });
 
-        const recipients = teamMembers.map((member: { email: string | null }) => member.email).filter(Boolean) as string[];
+        const recipients = teamMembers
+          .map((member: { staff: { email: string | null } }) => member.staff?.email)
+          .filter(Boolean) as string[];
         
         if (recipients.length > 0) {
           await notificationManager.notifyTicketCreated(notificationData, recipients);

@@ -107,7 +107,11 @@ export async function PUT(
           team: { 
             select: { 
               name: true,
-              members: { select: { email: true } }
+              members: { 
+                select: { 
+                  staff: { select: { email: true } }
+                } 
+              }
             } 
           },
         }
@@ -138,9 +142,9 @@ export async function PUT(
           recipients.push(ticketWithDetails.assignee.email);
         }
         if (ticketWithDetails.team?.members) {
-          ticketWithDetails.team.members.forEach((member: { email: string | null }) => {
-            if (member.email && !recipients.includes(member.email)) {
-              recipients.push(member.email);
+          ticketWithDetails.team.members.forEach((member: { staff: { email: string | null } }) => {
+            if (member.staff?.email && !recipients.includes(member.staff.email)) {
+              recipients.push(member.staff.email);
             }
           });
         }
