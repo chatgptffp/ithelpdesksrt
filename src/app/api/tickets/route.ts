@@ -189,18 +189,20 @@ export async function POST(request: NextRequest) {
           url: `${process.env.NEXTAUTH_URL}/admin/tickets/${ticket.id}`,
         };
 
-        // Get team members to notify
-        const teamMembers = await prisma.staffTeamMap.findMany({
-          where: { teamId: teamId },
-          select: { staff: { select: { email: true } } }
-        });
+        // Get team members to notify (only if teamId exists)
+        if (teamId) {
+          const teamMembers = await prisma.staffTeamMap.findMany({
+            where: { teamId },
+            select: { staff: { select: { email: true } } }
+          });
 
-        const recipients = teamMembers
-          .map((member: { staff: { email: string | null } }) => member.staff?.email)
-          .filter(Boolean) as string[];
-        
-        if (recipients.length > 0) {
-          await notificationManager.notifyTicketCreated(notificationData, recipients);
+          const recipients = teamMembers
+            .map((member: { staff: { email: string | null } }) => member.staff?.email)
+            .filter(Boolean) as string[];
+          
+          if (recipients.length > 0) {
+            await notificationManager.notifyTicketCreated(notificationData, recipients);
+          }
         }
       }
     } catch (notificationError) {
