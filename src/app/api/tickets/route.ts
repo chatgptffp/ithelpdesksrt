@@ -114,6 +114,9 @@ export async function POST(request: NextRequest) {
     // Find responsible team based on assignment rules
     const { teamId } = await findResponsibleTeam(data.systemId, data.categoryId);
 
+    // Get user agent
+    const userAgent = request.headers.get("user-agent") || undefined;
+
     // Create ticket
     const ticket = await prisma.ticket.create({
       data: {
@@ -122,6 +125,8 @@ export async function POST(request: NextRequest) {
         employeeCodeMasked,
         employeeCodeEnc,
         fullName: data.fullName,
+        email: data.email || null,
+        phone: data.phone || null,
         bureau: data.bureau,
         division: data.division,
         department: data.department,
@@ -133,6 +138,8 @@ export async function POST(request: NextRequest) {
         subject: data.subject,
         description: data.description,
         status: "NEW",
+        requesterIp: clientIP,
+        requesterUserAgent: userAgent,
       },
     });
 

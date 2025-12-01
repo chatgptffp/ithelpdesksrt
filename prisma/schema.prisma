@@ -246,6 +246,7 @@ model StaffUser {
   staffRoles       StaffRoleMap[]
   staffTeams       StaffTeamMap[]
   assignedTickets  Ticket[]          @relation("AssignedTickets")
+  createdTickets   Ticket[]          @relation("CreatedTickets")
   comments         Comment[]
   statusLogs       TicketStatusLog[]
   auditLogs        AuditLog[]
@@ -337,6 +338,8 @@ model Ticket {
   employeeCodePlain  String?      @map("employee_code_plain")
   employeeCodeEnc    String?      @map("employee_code_enc")
   fullName           String       @map("full_name")
+  email              String?      // อีเมลผู้แจ้ง
+  phone              String?      // เบอร์โทรผู้แจ้ง
   department         String // แผนก/งาน (snapshot)
   division           String // กอง (snapshot)
   bureau             String // สำนัก/ฝ่าย (snapshot)
@@ -349,18 +352,23 @@ model Ticket {
   description        String
   status             TicketStatus @default(NEW)
   assigneeId         String?      @map("assignee_id")
+  createdByStaffId   String?      @map("created_by_staff_id") // ถ้า Admin สร้างให้
+  requesterIp        String?      @map("requester_ip") // IP ผู้แจ้ง
+  requesterLocation  String?      @map("requester_location") // Location ผู้แจ้ง
+  requesterUserAgent String?      @map("requester_user_agent") @db.Text // Browser info
   resolvedAt         DateTime?    @map("resolved_at")
   closedAt           DateTime?    @map("closed_at")
   createdAt          DateTime     @default(now()) @map("created_at")
   updatedAt          DateTime     @updatedAt @map("updated_at")
 
-  organization Organization? @relation(fields: [organizationId], references: [id])
-  orgUnit      OrgUnit?      @relation(fields: [orgUnitId], references: [id])
-  category     MdCategory?   @relation(fields: [categoryId], references: [id])
-  priority     MdPriority?   @relation(fields: [priorityId], references: [id])
-  system       MdSystem?     @relation(fields: [systemId], references: [id])
-  team         SupportTeam?  @relation(fields: [teamId], references: [id])
-  assignee     StaffUser?    @relation("AssignedTickets", fields: [assigneeId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  orgUnit        OrgUnit?      @relation(fields: [orgUnitId], references: [id])
+  category       MdCategory?   @relation(fields: [categoryId], references: [id])
+  priority       MdPriority?   @relation(fields: [priorityId], references: [id])
+  system         MdSystem?     @relation(fields: [systemId], references: [id])
+  team           SupportTeam?  @relation(fields: [teamId], references: [id])
+  assignee       StaffUser?    @relation("AssignedTickets", fields: [assigneeId], references: [id])
+  createdByStaff StaffUser?    @relation("CreatedTickets", fields: [createdByStaffId], references: [id])
 
   attachments        Attachment[]
   comments           Comment[]

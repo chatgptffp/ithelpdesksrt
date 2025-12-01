@@ -82,6 +82,8 @@ export default function ReportPage() {
     defaultValues: {
       employeeCode: "",
       fullName: "",
+      email: "",
+      phone: "",
       bureau: "",
       division: "",
       department: "",
@@ -333,9 +335,17 @@ export default function ReportPage() {
                       name="employeeCode"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>รหัสพนักงาน *</FormLabel>
+                          <FormLabel>รหัสพนักงาน * (ตัวเลข 7 หลัก)</FormLabel>
                           <FormControl>
-                            <Input placeholder="เช่น EMP-000123" {...field} />
+                            <Input 
+                              placeholder="เช่น 1234567" 
+                              maxLength={7}
+                              {...field} 
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 7);
+                                field.onChange(value);
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -350,6 +360,49 @@ export default function ReportPage() {
                           <FormLabel>ชื่อ-สกุล *</FormLabel>
                           <FormControl>
                             <Input placeholder="ชื่อจริง นามสกุล" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>อีเมล</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email" 
+                              placeholder="example@email.com" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>เบอร์โทรศัพท์</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="tel" 
+                              placeholder="0812345678" 
+                              maxLength={10}
+                              {...field} 
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                field.onChange(value);
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

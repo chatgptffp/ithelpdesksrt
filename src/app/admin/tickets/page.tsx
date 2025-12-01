@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye } from "lucide-react";
+import { Eye, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 
@@ -85,6 +85,12 @@ export default async function AdminTicketsPage({
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">รายการ Ticket</h1>
           <p className="text-gray-600 dark:text-gray-400">จัดการและติดตาม Ticket ทั้งหมด</p>
         </div>
+        <Link href="/admin/tickets/new">
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="h-4 w-4 mr-2" />
+            สร้าง Ticket ใหม่
+          </Button>
+        </Link>
       </div>
 
       {/* Status Filter Tabs */}

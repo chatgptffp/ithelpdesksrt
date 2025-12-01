@@ -4,14 +4,25 @@ import { z } from "zod";
 export const createTicketSchema = z.object({
   employeeCode: z
     .string()
-    .min(3, "รหัสพนักงานต้องมีอย่างน้อย 3 ตัวอักษร")
-    .max(20, "รหัสพนักงานต้องไม่เกิน 20 ตัวอักษร")
-    .regex(/^[A-Za-z0-9\-_]+$/, "รหัสพนักงานต้องประกอบด้วยตัวอักษร ตัวเลข และเครื่องหมาย - หรือ _ เท่านั้น"),
+    .length(7, "รหัสพนักงานต้องเป็นตัวเลข 7 หลัก")
+    .regex(/^[0-9]{7}$/, "รหัสพนักงานต้องเป็นตัวเลข 7 หลักเท่านั้น"),
   
   fullName: z
     .string()
     .min(2, "ชื่อ-สกุลต้องมีอย่างน้อย 2 ตัวอักษร")
     .max(120, "ชื่อ-สกุลต้องไม่เกิน 120 ตัวอักษร"),
+  
+  email: z
+    .string()
+    .email("รูปแบบอีเมลไม่ถูกต้อง")
+    .optional()
+    .or(z.literal("")),
+  
+  phone: z
+    .string()
+    .regex(/^[0-9]{9,10}$/, "เบอร์โทรศัพท์ต้องเป็นตัวเลข 9-10 หลัก")
+    .optional()
+    .or(z.literal("")),
   
   bureau: z
     .string()
@@ -62,7 +73,8 @@ export const trackTicketSchema = z.object({
   
   employeeCode: z
     .string()
-    .min(3, "รหัสพนักงานต้องมีอย่างน้อย 3 ตัวอักษร"),
+    .length(7, "รหัสพนักงานต้องเป็นตัวเลข 7 หลัก")
+    .regex(/^[0-9]{7}$/, "รหัสพนักงานต้องเป็นตัวเลข 7 หลักเท่านั้น"),
 });
 
 export type TrackTicketInput = z.infer<typeof trackTicketSchema>;
