@@ -646,9 +646,11 @@ model NotificationSettings {
   fromEmail      String?  @map("from_email")
   fromName       String?  @map("from_name")
   
-  // LINE Notify Settings
-  lineEnabled    Boolean  @default(false) @map("line_enabled")
-  lineToken      String?  @map("line_token")
+  // LINE Messaging API Settings
+  lineEnabled       Boolean  @default(false) @map("line_enabled")
+  lineChannelSecret String?  @map("line_channel_secret")
+  lineAccessToken   String?  @map("line_access_token")
+  lineUserId        String?  @map("line_user_id") // Target user ID for notifications
   
   // Discord Settings
   discordEnabled Boolean  @default(false) @map("discord_enabled")

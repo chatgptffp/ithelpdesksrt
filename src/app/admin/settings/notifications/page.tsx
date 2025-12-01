@@ -23,7 +23,9 @@ interface NotificationSettings {
   fromEmail: string;
   fromName: string;
   lineEnabled: boolean;
-  lineToken: string;
+  lineChannelSecret: string;
+  lineAccessToken: string;
+  lineUserId: string;
   discordEnabled: boolean;
   discordWebhook: string;
 }
@@ -39,7 +41,9 @@ export default function NotificationSettingsPage() {
     fromEmail: "",
     fromName: "IT Helpdesk",
     lineEnabled: false,
-    lineToken: "",
+    lineChannelSecret: "",
+    lineAccessToken: "",
+    lineUserId: "",
     discordEnabled: false,
     discordWebhook: "",
   });
@@ -151,7 +155,7 @@ export default function NotificationSettingsPage() {
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent gap-2 px-6 py-3"
               >
                 <MessageCircle className="h-4 w-4" />
-                LINE Notify
+                LINE Bot
               </TabsTrigger>
               <TabsTrigger 
                 value="discord" 
@@ -270,12 +274,12 @@ export default function NotificationSettingsPage() {
               )}
             </TabsContent>
 
-            {/* LINE Notify Settings */}
+            {/* LINE Messaging API Settings */}
             <TabsContent value="line" className="p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold">LINE Notify</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">ส่งการแจ้งเตือนผ่าน LINE Notify</p>
+                  <h3 className="text-lg font-semibold">LINE Messaging API</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">ส่งการแจ้งเตือนผ่าน LINE Messaging API</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <Button
@@ -301,16 +305,37 @@ export default function NotificationSettingsPage() {
               {settings.lineEnabled && (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="lineToken">LINE Notify Token</Label>
+                    <Label htmlFor="lineChannelSecret">Channel Secret</Label>
                     <Input
-                      id="lineToken"
+                      id="lineChannelSecret"
                       type="password"
-                      value={settings.lineToken}
-                      onChange={(e) => setSettings(prev => ({ ...prev, lineToken: e.target.value }))}
-                      placeholder="LINE Notify Access Token"
+                      value={settings.lineChannelSecret}
+                      onChange={(e) => setSettings(prev => ({ ...prev, lineChannelSecret: e.target.value }))}
+                      placeholder="LINE Channel Secret"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="lineAccessToken">Channel Access Token</Label>
+                    <Input
+                      id="lineAccessToken"
+                      type="password"
+                      value={settings.lineAccessToken}
+                      onChange={(e) => setSettings(prev => ({ ...prev, lineAccessToken: e.target.value }))}
+                      placeholder="LINE Channel Access Token"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="lineUserId">Target User ID</Label>
+                    <Input
+                      id="lineUserId"
+                      value={settings.lineUserId}
+                      onChange={(e) => setSettings(prev => ({ ...prev, lineUserId: e.target.value }))}
+                      placeholder="LINE User ID ที่จะส่งการแจ้งเตือน"
                     />
                     <p className="text-xs text-gray-500">
-                      รับ Token ได้ที่: <a href="https://notify-bot.line.me/my/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">https://notify-bot.line.me/my/</a>
+                      สร้าง LINE Bot ได้ที่: <a href="https://developers.line.biz/console/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LINE Developers Console</a>
                     </p>
                   </div>
                 </div>

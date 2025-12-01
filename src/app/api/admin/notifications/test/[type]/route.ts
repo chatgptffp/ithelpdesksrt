@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { EmailService } from '@/lib/notification/email';
-import { LineNotifyService } from '@/lib/notification/line';
+import { LineMessagingService } from '@/lib/notification/line';
 import { DiscordWebhookService } from '@/lib/notification/discord';
 
 export async function POST(
@@ -49,14 +49,15 @@ export async function POST(
           return NextResponse.json({ error: 'LINE not enabled' }, { status: 400 });
         }
 
-        const lineService = new LineNotifyService(settings);
+        const lineService = new LineMessagingService(settings);
         const lineTest = await lineService.testConnection();
         
         if (lineTest) {
-          // Send test message
-          await lineService.sendMessage({
-            message: `🧪 ทดสอบการส่งข้อความจาก IT Helpdesk\n\n✅ การตั้งค่า LINE Notify ทำงานได้ถูกต้อง\n⏰ เวลาทดสอบ: ${new Date().toLocaleString('th-TH')}`,
-          });
+          // Send test message using rich notification
+          await lineService.sendRichNotification(
+            '🧪 ทดสอบการเชื่อมต่อ',
+            `✅ การตั้งค่า LINE Messaging API ทำงานได้ถูกต้อง\n⏰ เวลาทดสอบ: ${new Date().toLocaleString('th-TH')}`
+          );
         }
 
         return NextResponse.json({ success: lineTest });

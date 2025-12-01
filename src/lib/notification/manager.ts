@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 import { EmailService } from './email';
-import { LineNotifyService } from './line';
+import { LineMessagingService } from './line';
 import { DiscordWebhookService } from './discord';
 // Temporary enums until Prisma regenerates
 enum NotificationChannel {
@@ -31,7 +31,7 @@ export interface NotificationData {
 
 export class NotificationManager {
   private emailService: EmailService | null = null;
-  private lineService: LineNotifyService | null = null;
+  private lineService: LineMessagingService | null = null;
   private discordService: DiscordWebhookService | null = null;
 
   constructor(private organizationId?: string) {}
@@ -51,7 +51,7 @@ export class NotificationManager {
     }
 
     if (settings.lineEnabled) {
-      this.lineService = new LineNotifyService(settings as any);
+      this.lineService = new LineMessagingService(settings as any);
     }
 
     if (settings.discordEnabled) {
@@ -104,7 +104,7 @@ export class NotificationManager {
           case 'LINE':
             if (this.lineService) {
               success = await this.lineService.sendMessage({
-                message: body,
+                text: body,
               });
             }
             break;
