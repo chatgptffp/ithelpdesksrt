@@ -1,4 +1,6 @@
 import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
+import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 // Temporary type until Prisma generates new types
 interface NotificationSettings {
@@ -20,19 +22,20 @@ export interface EmailOptions {
 }
 
 export class EmailService {
-  private transporter: nodemailer.Transporter | null = null;
+  private transporter: Transporter<SMTPTransport.SentMessageInfo> | null = null;
 
   constructor(private settings: NotificationSettings) {
     if (this.settings.emailEnabled && this.settings.smtpHost) {
-      this.transporter = nodemailer.createTransporter({
+      const transportOptions: SMTPTransport.Options = {
         host: this.settings.smtpHost,
         port: this.settings.smtpPort || 587,
         secure: this.settings.smtpSecure,
         auth: {
-          user: this.settings.smtpUser,
-          pass: this.settings.smtpPassword,
+          user: this.settings.smtpUser || '',
+          pass: this.settings.smtpPassword || '',
         },
-      });
+      };
+      this.transporter = nodemailer.createTransport(transportOptions);
     }
   }
 
