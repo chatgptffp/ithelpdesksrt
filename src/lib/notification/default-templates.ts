@@ -1,5 +1,13 @@
 // Default notification templates
-export const defaultTemplates = [
+type NotificationChannelType = 'EMAIL' | 'LINE' | 'DISCORD';
+
+export const defaultTemplates: Array<{
+  name: string;
+  channel: NotificationChannelType;
+  subject: string;
+  body: string;
+  isActive: boolean;
+}> = [
   // Ticket Created Templates
   {
     name: 'ticket_created',
