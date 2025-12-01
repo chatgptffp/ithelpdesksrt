@@ -7,15 +7,17 @@ import { DiscordWebhookService } from '@/lib/notification/discord';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { type: string } }
+  { params }: { params: Promise<{ type: string }> }
 ) {
+  let type = '';
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { type } = params;
+    const resolvedParams = await params;
+    type = resolvedParams.type;
     const settings = await request.json();
 
     switch (type) {
@@ -90,7 +92,7 @@ export async function POST(
         return NextResponse.json({ error: 'Invalid test type' }, { status: 400 });
     }
   } catch (error) {
-    console.error(`Test ${params.type} error:`, error);
+    console.error(`Test ${type} error:`, error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Test failed' },
       { status: 500 }
