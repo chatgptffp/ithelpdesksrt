@@ -44,6 +44,8 @@ export default function BrandingSettingsPage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [website, setWebsite] = useState("");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
 
   useEffect(() => {
     fetchOrganization();
@@ -115,6 +117,37 @@ export default function BrandingSettingsPage() {
     setPrimaryColor("#3b82f6");
     setSecondaryColor("#64748b");
     setAccentColor("#f59e0b");
+  };
+
+  const handleUpload = async (file: File, type: "logo" | "favicon") => {
+    const setUploading = type === "logo" ? setIsUploadingLogo : setIsUploadingFavicon;
+    const setUrl = type === "logo" ? setLogoUrl : setFaviconUrl;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", type);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUrl(data.url);
+        toast.success(`อัปโหลด${type === "logo" ? "โลโก้" : "Favicon"}สำเร็จ`);
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "อัปโหลดไม่สำเร็จ");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("เกิดข้อผิดพลาดในการอัปโหลด");
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (isLoading) {
@@ -210,37 +243,109 @@ export default function BrandingSettingsPage() {
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">อัปโหลด URL ของโลโก้และ Favicon</p>
                 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="logoUrl">URL โลโก้</Label>
-                    <Input
-                      id="logoUrl"
-                      value={logoUrl}
-                      onChange={(e) => setLogoUrl(e.target.value)}
-                      placeholder="https://example.com/logo.png"
-                    />
-                    {logoUrl && (
-                      <div className="mt-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
-                        <p className="text-sm text-gray-500 mb-2">ตัวอย่าง:</p>
-                        <img
-                          src={logoUrl}
-                          alt="Logo preview"
-                          className="max-h-16 object-contain"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Logo Upload */}
+                  <div className="space-y-3">
+                    <Label>โลโก้องค์กร</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center bg-gray-50 dark:bg-gray-900 overflow-hidden">
+                        {logoUrl ? (
+                          <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                        ) : (
+                          <Upload className="h-8 w-8 text-gray-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <input
+                          type="file"
+                          id="logoFile"
+                          accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUpload(file, "logo");
                           }}
                         />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => document.getElementById("logoFile")?.click()}
+                          disabled={isUploadingLogo}
+                        >
+                          {isUploadingLogo ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <Upload className="h-4 w-4 mr-2" />
+                          )}
+                          อัปโหลดโลโก้
+                        </Button>
+                        {logoUrl && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setLogoUrl("")}
+                            className="text-red-500 hover:text-red-600"
+                          >
+                            ลบโลโก้
+                          </Button>
+                        )}
+                        <p className="text-xs text-gray-500">PNG, JPG, SVG, WebP (สูงสุด 500KB)</p>
                       </div>
-                    )}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="faviconUrl">URL Favicon</Label>
-                    <Input
-                      id="faviconUrl"
-                      value={faviconUrl}
-                      onChange={(e) => setFaviconUrl(e.target.value)}
-                      placeholder="https://example.com/favicon.ico"
-                    />
+
+                  {/* Favicon Upload */}
+                  <div className="space-y-3">
+                    <Label>Favicon</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center bg-gray-50 dark:bg-gray-900 overflow-hidden">
+                        {faviconUrl ? (
+                          <img src={faviconUrl} alt="Favicon" className="w-full h-full object-contain" />
+                        ) : (
+                          <Upload className="h-8 w-8 text-gray-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <input
+                          type="file"
+                          id="faviconFile"
+                          accept="image/png,image/x-icon,image/ico,image/svg+xml"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUpload(file, "favicon");
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => document.getElementById("faviconFile")?.click()}
+                          disabled={isUploadingFavicon}
+                        >
+                          {isUploadingFavicon ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <Upload className="h-4 w-4 mr-2" />
+                          )}
+                          อัปโหลด Favicon
+                        </Button>
+                        {faviconUrl && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setFaviconUrl("")}
+                            className="text-red-500 hover:text-red-600"
+                          >
+                            ลบ Favicon
+                          </Button>
+                        )}
+                        <p className="text-xs text-gray-500">ICO, PNG, SVG (สูงสุด 500KB)</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
