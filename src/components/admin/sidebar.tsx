@@ -295,7 +295,7 @@ export default function AdminSidebar({ user }: { user: User }) {
           <div className="lg:hidden h-16" />
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-4 overflow-y-auto">
+          <nav className="flex-1 px-4 py-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500">
             <NavLinks />
           </nav>
 
