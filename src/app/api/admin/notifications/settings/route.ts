@@ -10,18 +10,18 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // For now, use null as organizationId (single tenant)
-    const organizationId = null;
+    // For now, use undefined as organizationId (single tenant)
+    const organizationId: string | undefined = undefined;
 
     const settings = await prisma.notificationSettings.findFirst({
-      where: { organizationId },
+      where: { organizationId: organizationId ?? undefined },
     });
 
     if (!settings) {
       // Create default settings
       const defaultSettings = await prisma.notificationSettings.create({
         data: {
-          organizationId,
+          organizationId: organizationId ?? undefined,
           emailEnabled: false,
           lineEnabled: false,
           discordEnabled: false,
@@ -44,12 +44,12 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // For now, use null as organizationId (single tenant)
-    const organizationId = null;
+    // For now, use undefined as organizationId (single tenant)
+    const organizationId: string | undefined = undefined;
     const data = await request.json();
 
     const settings = await prisma.notificationSettings.upsert({
-      where: { organizationId },
+      where: { organizationId: organizationId ?? undefined },
       update: {
         emailEnabled: data.emailEnabled,
         smtpHost: data.smtpHost,
@@ -67,7 +67,7 @@ export async function PUT(request: NextRequest) {
         discordWebhook: data.discordWebhook,
       },
       create: {
-        organizationId,
+        organizationId: organizationId ?? undefined,
         emailEnabled: data.emailEnabled,
         smtpHost: data.smtpHost,
         smtpPort: data.smtpPort,
