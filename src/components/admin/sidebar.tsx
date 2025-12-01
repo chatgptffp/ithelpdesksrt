@@ -40,7 +40,6 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { useLanguage } from "@/lib/i18n";
 import { useBranding } from "@/contexts/branding-context";
-import Image from "next/image";
 
 interface User {
   id: string;
@@ -232,12 +231,11 @@ export default function AdminSidebar({ user }: { user: User }) {
         <div className="flex items-center justify-between">
           <Link href="/admin" className="flex items-center gap-3">
             {branding.logoUrl ? (
-              <Image src={branding.logoUrl} alt={branding.name} width={40} height={40} className="rounded-lg" />
-            ) : (
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <Shield className="h-5 w-5 text-white" />
-              </div>
-            )}
+              <img src={branding.logoUrl} alt={branding.name} className="h-10 w-10 rounded-lg object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+            ) : null}
+            <div className={`p-2 bg-blue-600 rounded-lg ${branding.logoUrl ? 'hidden' : ''}`}>
+              <Shield className="h-5 w-5 text-white" />
+            </div>
             <span className="text-lg font-bold text-gray-900 dark:text-white">{branding.name}</span>
           </Link>
           <div className="flex items-center gap-2">
@@ -275,12 +273,11 @@ export default function AdminSidebar({ user }: { user: User }) {
           <div className="hidden lg:flex h-20 items-center justify-between border-b border-gray-200 dark:border-gray-700 px-5">
             <Link href="/admin" className="flex items-center gap-3">
               {branding.logoUrl ? (
-                <Image src={branding.logoUrl} alt={branding.name} width={48} height={48} className="rounded-xl" />
-              ) : (
-                <div className="p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
-                  <Shield className="h-6 w-6 text-white" />
-                </div>
-              )}
+                <img src={branding.logoUrl} alt={branding.name} className="h-12 w-12 rounded-xl object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+              ) : null}
+              <div className={`p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20 ${branding.logoUrl ? 'hidden' : ''}`}>
+                <Shield className="h-6 w-6 text-white" />
+              </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 dark:text-white">{branding.name}</h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t.sidebar.adminPanel}</p>
