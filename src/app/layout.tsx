@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LanguageProvider } from "@/lib/i18n";
 import { BrandingProvider } from "@/contexts/branding-context";
 import { PWAInstaller } from "@/components/pwa-installer";
+import { ChatbotWidget } from "@/components/chatbot/chatbot-widget";
 import "./globals.css";
 
 const chakraPetch = Chakra_Petch({
@@ -70,6 +71,7 @@ export default function RootLayout({
             <BrandingProvider>
               {children}
               <PWAInstaller />
+              <ChatbotWidget />
               <Toaster position="top-center" richColors />
             </BrandingProvider>
           </LanguageProvider>
