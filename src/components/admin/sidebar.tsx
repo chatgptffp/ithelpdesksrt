@@ -39,6 +39,8 @@ import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { useLanguage } from "@/lib/i18n";
+import { useBranding } from "@/contexts/branding-context";
+import Image from "next/image";
 
 interface User {
   id: string;
@@ -49,6 +51,7 @@ interface User {
 
 export default function AdminSidebar({ user }: { user: User }) {
   const pathname = usePathname() || "/admin";
+  const { branding } = useBranding();
   const { t } = useLanguage();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [newTicketsCount, setNewTicketsCount] = useState(0);
@@ -228,10 +231,14 @@ export default function AdminSidebar({ user }: { user: User }) {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
         <div className="flex items-center justify-between">
           <Link href="/admin" className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600 rounded-lg">
-              <Shield className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-lg font-bold text-gray-900 dark:text-white">IT Helpdesk</span>
+            {branding.logoUrl ? (
+              <Image src={branding.logoUrl} alt={branding.name} width={40} height={40} className="rounded-lg" />
+            ) : (
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <Shield className="h-5 w-5 text-white" />
+              </div>
+            )}
+            <span className="text-lg font-bold text-gray-900 dark:text-white">{branding.name}</span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -267,11 +274,15 @@ export default function AdminSidebar({ user }: { user: User }) {
           {/* Logo - Desktop */}
           <div className="hidden lg:flex h-20 items-center justify-between border-b border-gray-200 dark:border-gray-700 px-5">
             <Link href="/admin" className="flex items-center gap-3">
-              <div className="p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
+              {branding.logoUrl ? (
+                <Image src={branding.logoUrl} alt={branding.name} width={48} height={48} className="rounded-xl" />
+              ) : (
+                <div className="p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+                  <Shield className="h-6 w-6 text-white" />
+                </div>
+              )}
               <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">IT Helpdesk</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">{branding.name}</h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t.sidebar.adminPanel}</p>
               </div>
             </Link>
