@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     await prisma.ticketStatusLog.create({
       data: {
         ticketId: ticket.id,
-        staffId: session.user.id,
+        changedByStaffId: session.user.id,
         toStatus: "NEW",
         note: `สร้างรายการแจ้งปัญหาโดย ${session.user.name || session.user.email}`,
       },
