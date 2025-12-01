@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { hashEmployeeCode, maskEmployeeCode, encryptEmployeeCode } from "@/lib/employee-code";
 import { generateTicketCode } from "@/lib/ticket-code";
 import { findResponsibleTeam } from "@/lib/assignment";
+import { AuditLogger, AuditAction } from "@/lib/security/audit-logger";
 import { z } from "zod";
 
 // Schema สำหรับ Admin สร้าง Ticket
@@ -109,6 +110,24 @@ export async function POST(request: NextRequest) {
         toStatus: "NEW",
         note: `สร้างรายการแจ้งปัญหาโดย ${session.user.name || session.user.email}`,
       },
+    });
+
+    // Log ticket creation by admin
+    const clientIP = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+    const userAgent = request.headers.get("user-agent") || undefined;
+    await AuditLogger.log({
+      actorStaffId: session.user.id,
+      action: AuditAction.CREATE_TICKET,
+      entityType: "ticket",
+      entityId: ticket.id,
+      after: {
+        ticketCode: ticket.ticketCode,
+        subject: ticket.subject,
+        fullName: ticket.fullName,
+        createdByAdmin: true,
+      },
+      ip: clientIP,
+      userAgent,
     });
 
     return NextResponse.json({

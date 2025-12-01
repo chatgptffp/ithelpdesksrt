@@ -4,6 +4,7 @@ import { createTicketSchema } from "@/lib/validations/ticket";
 import { hashEmployeeCode, maskEmployeeCode, encryptEmployeeCode } from "@/lib/employee-code";
 import { generateTicketCode } from "@/lib/ticket-code";
 import { findResponsibleTeam } from "@/lib/assignment";
+import { AuditLogger, AuditAction } from "@/lib/security/audit-logger";
 import crypto from "crypto";
 
 // Rate limiting: เก็บ IP และเวลาที่ส่งล่าสุด
@@ -150,6 +151,22 @@ export async function POST(request: NextRequest) {
         toStatus: "NEW",
         note: "สร้างรายการแจ้งปัญหาใหม่",
       },
+    });
+
+    // Log ticket creation
+    await AuditLogger.log({
+      action: AuditAction.CREATE_TICKET,
+      entityType: "ticket",
+      entityId: ticket.id,
+      after: {
+        ticketCode: ticket.ticketCode,
+        subject: ticket.subject,
+        fullName: ticket.fullName,
+        categoryId: ticket.categoryId,
+        priorityId: ticket.priorityId,
+      },
+      ip: clientIP,
+      userAgent,
     });
 
     // Create attachments if any

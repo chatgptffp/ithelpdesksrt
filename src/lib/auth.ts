@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "./db";
+import { AuditLogger, AuditAction } from "./security/audit-logger";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -45,6 +46,9 @@ export const authOptions: NextAuthOptions = {
           where: { id: user.id },
           data: { lastLoginAt: new Date() },
         });
+
+        // Log successful login
+        await AuditLogger.logLogin(user.id);
 
         return {
           id: user.id,
